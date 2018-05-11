@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-/* Written by Marcel Goh on 12 January 2018. Adapted from a COMP 202 assignment at McGill University
+/* Written by Marcel Goh on 12 January 2018. Adapted from a COMP 202 Fall 2017 assignment at McGill University
  * (Originally assigned in Java). The program asks for a date as input from the user and prints the day of
  * the week that day falls on.
  */
