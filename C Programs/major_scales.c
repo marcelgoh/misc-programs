@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+/*
+ * Written by Marcel Goh on 19 February 2018. This program takes two command line arguments, a major scale
+ * and a solfege value (Do, Re, Mi, etc.). The program will then print out the note that corresponds to the 
+ * solfege in the scale. 
+ * (Adapted from Reddit's Daily Programmer Challenge #343 [Easy])
+ */
 
 /* converts scale to integer representation, returns -1 if invalid */
 int scaleToInt(char *note) {
