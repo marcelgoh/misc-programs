@@ -7,7 +7,7 @@
 
 int main() {
     int y, m, d;
-    printf("Enter date as three integers (Y M D): ");
+    printf("Enter date as three integers (YYYY MM DD): ");
     scanf("%d %d %d", &y, &m, &d);
     int y0, x, m0, d0;
     y0 = y - (14 - m) / 12;
