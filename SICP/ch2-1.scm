@@ -1,6 +1,5 @@
 #|
-Work-in-progress as of 15 May 2018
-Written by Marcel Goh
+Written by Marcel Goh on 15 May 2018
 Solutions to Chapter 2.1 of SICP (Abelson and Sussman)
 |#
 
@@ -211,3 +210,15 @@ l u  l u       l     u
                  (+ c (* decimal c))))
 (define (percent i)
   (* (/ (- (centre i) (lower-bound i)) (centre i)) 100))
+
+; Exercise 2.13: percent(mul-interval(a,b)) = percent(a) + percent(b)
+
+; Exercise 2.14
+(define (par1 r1 r2)
+  (div-interval (mul-interval r1 r2)
+                (add-interval r1 r2)))
+(define (par2 r1 r2)
+  (let ((one (make-interval 1 1)))
+    (div-interval one
+                  (add-interval (div-interval one r1)
+                                (div-interval one r2)))))
