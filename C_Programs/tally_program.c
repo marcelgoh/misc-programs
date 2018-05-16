@@ -1,3 +1,8 @@
+/* Written by Marcel Goh on 16 May 2018
+ * r/dailyprogrammer Challenge #361 [Easy]: Tally Program
+ * Takes in a single string as input
+ * Outputs score per letter (abcde): +1 for lowercase, -1 for uppercase
+ */
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
