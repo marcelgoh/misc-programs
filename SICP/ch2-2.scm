@@ -71,7 +71,7 @@
         (else
          (append (list (car items)) (fringe (cdr items))))))
 
-; Exercise 2.29
+; Exercise 2.29 (What a mess! But it works :P)
 (define (make-mobile left right)
   (list left right))
 ; length is scalar value, structure may be a scalar weight or another mobile
@@ -102,4 +102,49 @@
            #t)))
 ; d) if the structure because cons instead of list, only the selectors would change
 
-    
+; Exercise 2.30 (without the use of map)
+(define (square-tree tree)
+  (cond ((null? tree) '())
+        ((not (pair? tree))
+         (* tree tree))
+        (else (cons (square-tree (car tree))
+                    (square-tree (cdr tree))))))
+
+; Exercise 2.31
+(define (tree-map f tree)
+  (cond ((null? tree) '())
+        ((not (pair? tree))
+         (f tree))
+        (else (cons (tree-map f (car tree))
+                    (tree-map f (cdr tree))))))
+
+; Exercise 2.32 (This one made me feel smart!)
+(define (subsets s)
+  (if (null? s)
+      (list '())
+      (let ((rest (subsets (cdr s))))
+        (append rest (map (lambda (x) (cons (car s) x))
+                          rest)))))
+#| (We are reducing the list each time, but before we can do that, we must stick the car
+ | of the list onto the reduced subsets list. You can see this visually: Moving rightwards,
+ | each new number is applied to the full list before it.
+ |#
+
+; Exercise 2.33
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+(define (my-map p sequence)
+  (accumulate (lambda (x y) (cons (p x) y)) '() sequence))
+(define (my-append seq1 seq2)
+  (accumulate cons seq2 seq1))
+(define (my-length sequence)
+  (accumulate (lambda (x y) (+ y 1)) 0 sequence))
+
+; Exercise 2.34 WIP
+(define (horner-eval x coefficient-sequence)
+  (accumulate (lambda (this-coeff higher-terms) ())
+              0
+              coefficient-sequence))
