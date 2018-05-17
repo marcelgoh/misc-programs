@@ -67,7 +67,7 @@ int solfegeToInt(char *solfege) {
 int intToNote(char *note, int scale, char sf) {
      if (sf == 's') {
          if (scale == 0) {
-            strcpy(note, "C");
+             strcpy(note, "C");
          } else if (scale == 1) {
              strcpy(note, "C#");
          } else if (scale == 2) {
