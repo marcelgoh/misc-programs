@@ -143,8 +143,19 @@
 (define (my-length sequence)
   (accumulate (lambda (x y) (+ y 1)) 0 sequence))
 
-; Exercise 2.34 WIP
+; Exercise 2.34
 (define (horner-eval x coefficient-sequence)
-  (accumulate (lambda (this-coeff higher-terms) ())
+  (accumulate (lambda (this-coeff higher-terms)
+                (+ this-coeff (* x higher-terms)))
               0
               coefficient-sequence))
+
+; Exercise 2.35 (makes use of fringe from above)
+(define test (list 1 (list 2 (list 3 4) 5) (list 6 7)))
+(define (count-leaves t)
+  (accumulate (lambda (x y) (+ y 1))
+              0
+              (map (lambda (x) x) (fringe t))))
+; My solution was to find the length of the flattened tree, so the map function here is redundant.
+
+
