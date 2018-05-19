@@ -2,10 +2,8 @@
 # A program to tell you whether it is OK or not.
 
 print("Is it okay?")
-print("Enter your age:")
-your_age = input()
-print("Enter his/her age:")
-their_age = input()
+your_age = input("Enter your age: ")
+their_age = input("Enter his/her age: ")
 okay = 0
 if your_age > their_age:
     if int(their_age) >= (int(your_age)/2 + 7):
