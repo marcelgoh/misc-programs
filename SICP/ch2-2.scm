@@ -151,11 +151,43 @@
               coefficient-sequence))
 
 ; Exercise 2.35 (makes use of fringe from above)
-(define test (list 1 (list 2 (list 3 4) 5) (list 6 7)))
 (define (count-leaves t)
   (accumulate (lambda (x y) (+ y 1))
               0
               (map (lambda (x) x) (fringe t))))
 ; My solution was to find the length of the flattened tree, so the map function here is redundant.
 
+; Exercise 2.36
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      '()
+      (cons (accumulate op init (map car seqs))
+            (accumulate-n op init (map cdr seqs)))))
 
+; Exercise 2.37
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+(define (matrix-*-vector m v)
+  (map (lambda (x)
+         (accumulate + 0 (map * v x)))
+       m))
+(define (transpose mat)
+  (accumulate-n cons
+                '()
+                mat))
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map (lambda (row)
+           (map (lambda (cols)
+                  (dot-product row cols))
+                cols))
+         m)))
+
+; Exercise 2.38: 3/2, 1/6, (1 (2 (3 ()))), (((() 1) 2) 3)
+; For fold-left and fold-right to produce the same values, op should be commutative.
+
+; Exercise 2.39
+(define (right-reverse sequence)
+  (fold-right (lambda (x y) (append (right-reverse y) (list x))) '() sequence))
+(define (left-reverse sequence)
+  (fold-left (lambda (x y) (cons x (left-reverse y))) '() sequence))
