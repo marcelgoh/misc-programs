@@ -188,6 +188,7 @@
 
 ; Exercise 2.39
 (define (right-reverse sequence)
-  (fold-right (lambda (x y) (append (right-reverse y) (list x))) '() sequence))
+  (fold-right (lambda (x y) (append y (list x))) '() sequence))
 (define (left-reverse sequence)
-  (fold-left (lambda (x y) (cons x (left-reverse y))) '() sequence))
+  (fold-left (lambda (x y) (cons y x)) '() sequence))
+
