@@ -219,3 +219,40 @@
       (= s (accumulate + 0 triple))))
   (filter sum-valid? all-triples))
 ; My solution set is ordered from lowest to highest.
+
+; Exercise 2.42
+(define empty-board '())
+(define (adjoin-position row column rest)
+  (append rest (list (list row column))))
+(define (safe? k positions)
+  (define row-to-check
+    (caar (filter (lambda (pos) (= (cadr pos) k))
+                 positions)))
+  (define row-match?
+    (lambda (pos) (= (car pos) row-to-check)))
+  (define rows-safe?
+    (<= (accumulate (lambda (x y) (+ y 1)) 0 (filter row-match? positions))
+        1))
+  (define diag-match?
+    (lambda (pos) (= (abs (- (car pos) row-to-check))
+                     (abs (- (cadr pos) k)))))
+  (define diag-safe?
+    (<= (accumulate (lambda (x y) (+ y 1)) 0 (filter diag-match? positions))
+        1))
+  (and rows-safe? diag-safe?))
+(define (queens board-size)
+  (define (queen-cols k)
+    (if (= k 0)
+        (list empty-board)
+        (filter
+          (lambda (positions) (safe? k positions))
+          (flatmap
+            (lambda (rest-of-queens)
+              (map (lambda (new-row)
+                     (adjoin-position
+                       new-row k rest-of-queens))
+                   (enumerate-interval 1 board-size)))
+            (queen-cols (- k 1))))))
+  (queen-cols board-size))
+; My solution hits max recursion depth at (queens 11). I chose to represent a row-column pair as a list.
+; In retrospect, a pair might have been a more elegant representation.
