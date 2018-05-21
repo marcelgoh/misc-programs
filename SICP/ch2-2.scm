@@ -192,3 +192,30 @@
 (define (left-reverse sequence)
   (fold-left (lambda (x y) (cons y x)) '() sequence))
 
+; Exercise 2.40
+(define (flatmap proc seq)
+  (accumulate append '() (map proc seq)))
+(define (enumerate-interval m n)
+  (if (> m n)
+    '()
+    (cons m (enumerate-interval (+ m 1) n))))
+(define (unique-pairs n)
+  (flatmap (lambda (i)
+             (map (lambda (j) (list i j))
+                  (enumerate-interval 1 (- i 1))))
+           (enumerate-interval 1 n)))
+
+; Exercise 2.41
+(define (ordered-triples n s)
+  (define all-triples
+    (flatmap (lambda (i)
+               (flatmap (lambda (j)
+                          (map (lambda (k) (list i j k))
+                                 (enumerate-interval (+ j 1) n)))
+                        (enumerate-interval (+ i 1) n)))
+             (enumerate-interval 1 n)))
+  (define sum-valid?
+    (lambda (triple)
+      (= s (accumulate + 0 triple))))
+  (filter sum-valid? all-triples))
+; My solution set is ordered from lowest to highest.
