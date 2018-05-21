@@ -1,5 +1,5 @@
 #| Solutions to some exercises from Chapter 2.2 of SICP by Abelson and Sussman
- | Written by Marcel Goh, last updated 16 May 2018
+ | Written by Marcel Goh, last updated 21 May 2018
  |#
 
 ; Exercise 2.17
@@ -255,4 +255,4 @@
             (queen-cols (- k 1))))))
   (queen-cols board-size))
 ; My solution hits max recursion depth at (queens 11). I chose to represent a row-column pair as a list.
-; In retrospect, a pair might have been a more elegant representation.
+; In retrospect, a cons might have been a more elegant representation.
