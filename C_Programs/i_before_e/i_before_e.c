@@ -1,30 +1,30 @@
 #include <stdio.h>
 
-/* Written by Marcel Goh on 12 June 2018. 
+/* Written by Marcel Goh on 12 June 2018.
+ * Last updated on 22 June 2018.
  * Based on r/dailyprogrammer Challenge #363 [Easy]
  * The program checks whether words follow the "I before E except after C" rule.
  */
 
 /* Takes word as input and returns 1 if rule is followed, 0 otherwise */
 int check(const char *word) {
-    int followed = 1;
     for (int i=0; word[i] != '\0'; ++i) {
-        if (word[i] == 'e') {
+        if (word[i] == 'e' && word[i+1] == 'i') {
             if (i == 0) {
-                if (word[1] == 'i') {
-                    followed = 0;
+                return 0;
+            } else if (word[i-1] != 'c') {
+                return 0;
+            }
+        }
+        if (word[i] == 'i' && word[i+1] == 'e') {
+            if (i != 0) {
+                if (word[i-1] == 'c') {
+                    return 0;
                 }
-            } else if (word[i+1] == 'i' && word[i-1] != 'c') {
-                followed = 0;
             }
-        }
-        if (word[i] == 'i' && i != 0) {
-            if (word[i+1] == 'e' && word[i-1] == 'c') {
-                followed = 0;
-            }
-        }
+        }   
     }
-    return followed;
+    return 1;
 }
 
 /* Gets word from user then tests word using check() */
@@ -64,6 +64,7 @@ int check_file() {
     fread(&buffer, sizeof(char), 1, file);
     while (!feof(file)) {
         if (buffer == '\n') {
+            word[word_length++] = '\0';
             if (!check(word)) {
                 ++exceptions;
             }
@@ -82,7 +83,6 @@ int check_file() {
     printf("The number of exceptions is: %d\n\n", exceptions);
     return 0;
 }
-
 
 int main() {
     int option = 0;
