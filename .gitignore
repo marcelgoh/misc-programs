@@ -1,6 +1,7 @@
 # OS generated files #
 .DS_Store
 *.swp
+*.dSYM
 
 # Compiled source #
 *.out
