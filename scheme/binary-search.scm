@@ -1,4 +1,5 @@
 ; BINARY SEARCH: Written by Marcel Goh on 3 July 2018.
+; Defective: does not run in logarithmic time.
 
 (define (binary item list)        ; returns index of item in list
   (define (nth n list)            ; returns element of list at index n
