@@ -6,3 +6,5 @@
 # Compiled source #
 *.out
 *.o
+*.hs
+*.hi
