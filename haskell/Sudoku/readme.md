@@ -1,6 +1,6 @@
 # Sudoku Solver
 
-A program that solves sudoku puzzles. The program can reads input from a `.txt` file, taking the first 81 numbers in the file as the puzzle to solve. Will not work correctly if puzzle is not solvable. Some puzzles and solutions are included for testing purposes.  
+A program that solves sudoku puzzles. The program reads input from a `.txt` file, taking the first 81 numbers in the file as the puzzle to solve. Will not work correctly if puzzle is not solvable. Some puzzles and solutions are included for testing purposes.  
 
 Usage:  
 ```
