@@ -1,6 +1,6 @@
 {- Various sort algorithms. Written by Marcel Goh on 23 July 2018 -}
 
--- actually a "pseudo-quicksort"
+-- actually a "pseudo-quicksort" because not in-place
 quicksort :: [Int] -> [Int]
 quicksort []     = []
 quicksort (n:ns) = (quicksort $ filter (n >) ns) ++ (n : (quicksort $ filter (n <=) ns))
