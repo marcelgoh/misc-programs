@@ -24,8 +24,10 @@ twoPowers :: Int -> [Int]
 twoPowers n =
   let buildList :: Int -> Int -> [Int] -> [Int]
       buildList n exp acc
-        | q == 0 = if r == 0 then acc else exp : acc
-        | otherwise = buildList q (succ exp) (exp : acc)
-        where q = n `div` 2^exp
-              r = n `mod` 2^exp
+        | q == 0    = if r == 0 then acc else exp : acc
+        | otherwise = if r == 0
+                      then buildList q (succ exp) acc
+                      else buildList q (succ exp) (exp : acc)
+        where q = n `div` 2
+              r = n `mod` 2
   in buildList n 0 []
