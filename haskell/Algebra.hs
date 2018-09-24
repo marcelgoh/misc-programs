@@ -1,5 +1,7 @@
 -- Some algorithms using concepts from algebra
--- Last updated 11 Sep 2018 by Marcel Goh
+-- Last updated 24 Sep 2018 by Marcel Goh
+
+import Data.List
 
 -- calculates the gcd of a and b and returns a triple
 -- (gcd(a, b), r, s) such that
@@ -36,7 +38,7 @@ twoPowers n =
 modPow :: Int -> Int -> Int -> Int
 modPow a x n =
       -- for a list [x1,x2,x3,...xn], returns [a^(2^x1) `mod` n, a^(2^x2) `mod` n, etc.]
-      -- does so without necessarily calculating a^(2^xi), as this would make large intermediate numbers
+      -- does so without necessarily calculating every a^(2^xi), as this would make large intermediate numbers
       -- we only need the number (mod n) so we (mod n) every iteration to keep the numbers small
   let succSq :: Int -> Int -> [Int] -> [Int] -> [Int]
       succSq iter currAPower acc list =
@@ -54,3 +56,32 @@ modPow a x n =
   in (foldl (\x y -> x * y `mod` n)
             1
             (succSq 0 a [] (reverse (twoPowers x))))
+
+-- creates a table given a set of integers and a binary operation
+fillCayley :: [Int] -> (Int -> Int -> Int) -> [[Int]]
+fillCayley set operation =
+  map (\g -> map (\x -> operation g x) set) set
+
+-- given a set and Cayley table, prints the table in a readable format
+printCayley :: [Int] -> [[Int]] -> IO ()
+printCayley set table =
+  let setStr = intercalate " " (map show set)
+      tableStr = map (\list -> intercalate " " (map show list)) table
+      iterate set tableStr =
+        case set of
+          []         -> return ()
+          (int:ints) -> do putStr (show int)
+                           putStr " | "
+                           putStrLn (head tableStr)
+                           iterate ints (tail tableStr)
+      -- draws two hyphens per number
+      drawLine num =
+        if num > 0
+        then do putStr "--"
+                drawLine (pred num)
+        else do putChar '\n'
+  in do putStr "* | "
+        putStrLn setStr
+        putStr "----"
+        drawLine (length set)
+        iterate set tableStr
