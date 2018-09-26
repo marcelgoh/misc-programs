@@ -2,6 +2,7 @@
 -- Last updated 24 Sep 2018 by Marcel Goh
 
 import Data.List
+import Text.Printf
 
 -- calculates the gcd of a and b and returns a triple
 -- (gcd(a, b), r, s) such that
@@ -65,23 +66,23 @@ fillCayley set operation =
 -- given a set and Cayley table, prints the table in a readable format
 printCayley :: [Int] -> [[Int]] -> IO ()
 printCayley set table =
-  let setStr = intercalate " " (map show set)
-      tableStr = map (\list -> intercalate " " (map show list)) table
+  let setStr = intercalate " " (map (\l -> printf "%3s" (show l)) set)
+      tableStr = map (\list -> intercalate " " (map (\l -> printf "%3s" (show l)) list)) table
       iterate set tableStr =
         case set of
           []         -> return ()
-          (int:ints) -> do putStr (show int)
+          (int:ints) -> do printf "%3s" (show int)
                            putStr " | "
                            putStrLn (head tableStr)
                            iterate ints (tail tableStr)
       -- draws two hyphens per number
       drawLine num =
         if num > 0
-        then do putStr "--"
+        then do putStr "----"
                 drawLine (pred num)
         else do putChar '\n'
-  in do putStr "* | "
+  in do putStr "  * | "
         putStrLn setStr
-        putStr "----"
+        putStr "------"
         drawLine (length set)
         iterate set tableStr
