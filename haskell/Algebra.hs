@@ -1,8 +1,5 @@
 -- Some algorithms using concepts from algebra
--- Last updated 24 Sep 2018 by Marcel Goh
-
-import Data.List
-import Text.Printf
+-- Last updated 26 Sep 2018 by Marcel Goh
 
 -- calculates the gcd of a and b and returns a triple
 -- (gcd(a, b), r, s) such that
@@ -58,31 +55,3 @@ modPow a x n =
             1
             (succSq 0 a [] (reverse (twoPowers x))))
 
--- creates a table given a set of integers and a binary operation
-fillCayley :: [Int] -> (Int -> Int -> Int) -> [[Int]]
-fillCayley set operation =
-  map (\g -> map (\x -> operation g x) set) set
-
--- given a set and Cayley table, prints the table in a readable format
-printCayley :: [Int] -> [[Int]] -> IO ()
-printCayley set table =
-  let setStr = intercalate " " (map (\l -> printf "%3s" (show l)) set)
-      tableStr = map (\list -> intercalate " " (map (\l -> printf "%3s" (show l)) list)) table
-      iterate set tableStr =
-        case set of
-          []         -> return ()
-          (int:ints) -> do printf "%3s" (show int)
-                           putStr " | "
-                           putStrLn (head tableStr)
-                           iterate ints (tail tableStr)
-      -- draws two hyphens per number
-      drawLine num =
-        if num > 0
-        then do putStr "----"
-                drawLine (pred num)
-        else do putChar '\n'
-  in do putStr "  * | "
-        putStrLn setStr
-        putStr "------"
-        drawLine (length set)
-        iterate set tableStr
