@@ -14,7 +14,7 @@ fillCayley :: [Int] -> (Int -> Int -> Int) -> [[Element]]
 fillCayley set operation =
   map (\l -> map Int l) $ map (\g -> map (\x -> operation g x) set) set
 
--- given a set and Cayley table, prints the table in a readable format
+-- given a set and Cayley table (a list of rows), prints the table in a readable format
 -- supports any kind of Element
 printCayley :: [Element] -> [[Element]] -> IO ()
 printCayley set table =
@@ -44,6 +44,15 @@ printCayley set table =
         putStr "------"
         drawLine (length set)
         iterate set tableStr
+
+-- given a list of rows, returns a list of columns
+getCols :: [[Element]] -> [[Element]]
+getCols rows =
+  let iter acc rowsLeft =
+        case rowsLeft of
+          []:_ -> reverse acc
+          _    -> iter ((map head rowsLeft) : acc) (map tail rowsLeft)
+  in iter [] rows
 
 -- quaternion group for testing
 o = String "1"
