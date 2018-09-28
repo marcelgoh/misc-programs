@@ -54,6 +54,18 @@ getCols rows =
           _    -> iter ((map head rowsLeft) : acc) (map tail rowsLeft)
   in iter [] rows
 
+-- determines if given table corresponds to an abelian (i.e. commutative) group
+tableAbelian :: [[Element]] -> Bool
+tableAbelian rows =
+  let cols = getCols rows
+      -- both tables must be of equal size (but all Cayley tables should be square anyway)
+      tableEquals :: [[Element]] -> [[Element]] -> Bool
+      tableEquals t1 t2 =
+        case t1 of
+          [] -> True
+          _  -> if head t1 /= head t2 then False else tableEquals (tail t1) (tail t2)
+  in tableEquals rows cols
+
 -- quaternion group for testing
 o = String "1"
 o' = String "-1"
@@ -81,13 +93,22 @@ thirtySet = map Int [1, 7, 11, 13, 17, 19, 23, 29]
 thirtyTable :: [[Element]]
 thirtyTable = fillCayley [1,7,11,13,17,19,23,29] (\x y -> (x*y) `mod` 30)
 
--- dihedral group D3 for testing
+-- dihedral groups D2, D3 for testing
 e = Char 'e'
 a = Char 'a'
 b = Char 'b'
 c = Char 'c'
 d = Char 'd'
 f = Char 'f'
+-- D2
+rectangleSet :: [Element]
+rectangleSet = [e, a, b, c]
+rectangleTable :: [[Element]]
+rectangleTable = [[e,a,b,c],
+                  [a,e,c,b],
+                  [b,c,e,a],
+                  [c,b,a,e]]
+-- D3
 triangleSet :: [Element]
 triangleSet = [e, a, b, c, d, f]
 triangleTable :: [[Element]]
