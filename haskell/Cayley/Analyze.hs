@@ -5,7 +5,7 @@ module Analyze where
 
 import Data.List
 import Text.Printf
-import Data
+import Tables
 
 -- given a set and Cayley table (a list of rows), prints the table in a readable format
 -- supports any kind of Element
@@ -59,4 +59,17 @@ abelian (Group _ rows) =
           _  -> if head t1 /= head t2 then False else tableEquals (tail t1) (tail t2)
   in tableEquals rows cols
 
--- TODO: check if group contains identity element
+-- determines if group contains identity element
+hasId :: Group -> Bool
+hasId (Group set rows) =
+  let cols = getCols rows
+      -- checks through table and sees if one row/col matches set
+      findMatch :: [Element] -> [[Element]] -> Bool
+      findMatch set table =
+        case table of
+          []   -> False
+          l:ls -> if set == l
+                  then True
+                  else findMatch set ls
+  in (findMatch set rows) && (findMatch set cols)
+

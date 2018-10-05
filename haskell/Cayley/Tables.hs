@@ -1,4 +1,4 @@
-module Data where
+module Tables where
 
 {- Contains a bunch of different groups to use in the Analyze program -}
 

@@ -2,11 +2,11 @@
 
 A program that determines the properties of groups by generating and analyzing Cayley tables.  
 
-For now, the best way to use this is to load the `Main.hs` file into GHCi. Then to use any of the groups defined in `Data.hs`, prefix the group name with `Data.`. Example:
+For now, the best way to use this is to load the `Main.hs` file into GHCi. Example:
 ```
 $ ghci
 *Main> :load Main.hs
-*Main> printCayley Data.thirtyGroup
+*Main> printCayley thirtyGroup
   * |   1   7  11  13  17  19  23  29
 --------------------------------------
   1 |   1   7  11  13  17  19  23  29
