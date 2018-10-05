@@ -4,7 +4,9 @@ module Analyze where
 -- Last updated on 5 October 2018 by Marcel Goh
 
 import Data.List
+import Data.Maybe
 import Text.Printf
+
 import Tables
 
 -- given a set and Cayley table (a list of rows), prints the table in a readable format
@@ -73,4 +75,33 @@ getId (Group set rows) =
                   else tryElem es (tail rows) (tail cols)
   in tryElem set rows cols
 
+-- checks if group has an identity element
+hasId :: Group -> Bool
+hasId g = isJust $ getId g
 
+
+-- applies the binary operation (a `dot` b) to a and b in Group
+dot :: Element -> Element -> Group -> Maybe Element
+dot a b (Group set rows) =
+      -- returns the row corresponding to a in table
+  let findRow :: Element -> [Element] -> [[Element]] -> Maybe [Element]
+      findRow a setLeft rowsLeft =
+        case setLeft of
+          []   -> Nothing
+          e:es -> if e == a then Just (head rowsLeft) else findRow a es (tail rowsLeft)
+      aRow = findRow a set rows
+      -- returns the Element corresponding to b in a's row
+      findElem :: Element -> [Element] -> [Element] -> Maybe Element
+      findElem b setLeft rowLeft =
+        case setLeft of
+          []   -> Nothing
+          e:es -> if e == b then Just (head rowLeft) else findElem b es (tail rowLeft)
+  in case aRow of
+       Nothing    -> Nothing
+       (Just row) -> findElem b set row
+
+{- TODO
+-- given an Element and a Group, find the inverse of that Element in the Group
+getInv :: Element -> Group -> Maybe Element
+getInv elem (Group set rows) =
+-}
