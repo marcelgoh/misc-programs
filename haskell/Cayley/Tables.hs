@@ -73,3 +73,7 @@ triangleTable = [[e,a,b,c,d,f],
                  [f,b,c,a,e,d]]
 triangleGroup :: Group
 triangleGroup = Group triangleSet triangleTable
+
+-- addition without 0 (no identity) - for testing
+noId :: Group
+noId = groupFromOperation [1,2,3,4,5] (\x y -> x+y)

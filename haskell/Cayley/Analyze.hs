@@ -1,7 +1,7 @@
 module Analyze where
 
 -- Some functions involving groups and Cayley tables
--- Last updated on 26 September 2018 by Marcel Goh
+-- Last updated on 5 October 2018 by Marcel Goh
 
 import Data.List
 import Text.Printf
@@ -59,17 +59,18 @@ abelian (Group _ rows) =
           _  -> if head t1 /= head t2 then False else tableEquals (tail t1) (tail t2)
   in tableEquals rows cols
 
--- determines if group contains identity element
-hasId :: Group -> Bool
-hasId (Group set rows) =
+-- returns identity of group or Nothing if no identity exists
+getId :: Group -> Maybe Element
+getId (Group set rows) =
   let cols = getCols rows
-      -- checks through table and sees if one row/col matches set
-      findMatch :: [Element] -> [[Element]] -> Bool
-      findMatch set table =
-        case table of
-          []   -> False
-          l:ls -> if set == l
-                  then True
-                  else findMatch set ls
-  in (findMatch set rows) && (findMatch set cols)
+      -- checks if any element in set has the set itself as its row/col
+      tryElem :: [Element] -> [[Element]] -> [[Element]] -> Maybe Element
+      tryElem setLeft rows cols =
+        case setLeft of
+          []   -> Nothing
+          e:es -> if (((head rows) == set) && (head cols) == set)
+                  then Just e
+                  else tryElem es (tail rows) (tail cols)
+  in tryElem set rows cols
+
 
