@@ -17,7 +17,8 @@ groupFromOperation ints operation =
       table = map (\l -> map Int l) $ map (\g -> map (\x -> operation g x) ints) ints
   in Group set table
 
--- quaternion group for testing
+-- FOR TESTING --
+-- quaternion group
 o = String "1"
 o' = String "-1"
 i = String "i"
@@ -40,11 +41,11 @@ quatTable = [[o, o', i, i', j, j', k, k'],
 quatGroup :: Group
 quatGroup = Group quatSet quatTable
 
--- U(30) for testing
+-- U(30)
 thirtyGroup :: Group
 thirtyGroup = groupFromOperation [1,7,11,13,17,19,23,29] (\x y -> (x*y) `mod` 30)
 
--- dihedral groups D2, D3 for testing
+-- dihedral groups D2, D3
 e = Char 'e'
 a = Char 'a'
 b = Char 'b'
@@ -74,6 +75,21 @@ triangleTable = [[e,a,b,c,d,f],
 triangleGroup :: Group
 triangleGroup = Group triangleSet triangleTable
 
--- addition without 0 (no identity) - for testing
+-- NOT GROUPS 
+-- addition without 0 (no identity)
 noId :: Group
 noId = groupFromOperation [1,2,3,4,5] (\x y -> x+y)
+-- multiplication with 0 (no inverses)
+noInv :: Group
+noInv = groupFromOperation [0,1,2,3,4] (\x y -> x*y)
+-- repeated elements
+reps :: Group
+reps = Group [a,b,c,d] [[a,b,c,d],
+                        [b,c,a,a],
+                        [c,d,a,b],
+                        [d,a,b,c]]
+-- not closed
+notClosed :: Group
+notClosed = Group [a,b,c] [[a,b,c],
+                           [b,d,a],
+                           [c,a,b]]

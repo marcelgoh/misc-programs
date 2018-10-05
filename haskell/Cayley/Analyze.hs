@@ -61,6 +61,19 @@ abelian (Group _ rows) =
           _  -> if head t1 /= head t2 then False else tableEquals (tail t1) (tail t2)
   in tableEquals rows cols
 
+-- checks if each row and column in table contains all unique elements
+noRepeats :: Group -> Bool
+noRepeats (Group _ rows) =
+  let cols = getCols rows
+      allUnique :: [Element] -> Bool
+      allUnique list =
+        case list of
+          []   -> True
+          e:es -> e `notElem` es && allUnique es
+      tableUnique :: [[Element]] -> Bool
+      tableUnique lists = foldr (&&) True (map allUnique lists)
+  in tableUnique cols && tableUnique rows
+
 -- returns identity of group or Nothing if no identity exists
 getId :: Group -> Maybe Element
 getId (Group set rows) =
@@ -79,17 +92,19 @@ getId (Group set rows) =
 hasId :: Group -> Bool
 hasId g = isJust $ getId g
 
+-- returns the row corresponding to Element in table
+findRow :: Element -> Group -> Maybe [Element]
+findRow elem (Group set rows) =
+  let searchRows setLeft rowsLeft =
+        case setLeft of
+          []   -> Nothing
+          e:es -> if e == elem then Just (head rowsLeft) else searchRows es (tail rowsLeft)
+  in searchRows set rows
 
 -- applies the binary operation (a `dot` b) to a and b in Group
 dot :: Element -> Element -> Group -> Maybe Element
 dot a b (Group set rows) =
-      -- returns the row corresponding to a in table
-  let findRow :: Element -> [Element] -> [[Element]] -> Maybe [Element]
-      findRow a setLeft rowsLeft =
-        case setLeft of
-          []   -> Nothing
-          e:es -> if e == a then Just (head rowsLeft) else findRow a es (tail rowsLeft)
-      aRow = findRow a set rows
+  let aRow = findRow a (Group set rows)
       -- returns the Element corresponding to b in a's row
       findElem :: Element -> [Element] -> [Element] -> Maybe Element
       findElem b setLeft rowLeft =
@@ -100,8 +115,40 @@ dot a b (Group set rows) =
        Nothing    -> Nothing
        (Just row) -> findElem b set row
 
-{- TODO
+
 -- given an Element and a Group, find the inverse of that Element in the Group
 getInv :: Element -> Group -> Maybe Element
 getInv elem (Group set rows) =
--}
+  let group = (Group set rows)
+      identity = getId group
+      rowOfElem = findRow elem group
+      -- find the element that gives id in rowOfElem
+      findInv :: Element -> [Element] -> [Element] -> Maybe Element
+      findInv id setLeft rowsLeft =
+        case rowsLeft of
+          []   -> Nothing
+          e:es -> if e == id then Just (head setLeft) else findInv id (tail setLeft) es
+  in case (identity, rowOfElem) of
+       (Just id, Just elems) -> let possibleInv = findInv id set elems
+                                in case possibleInv of
+                                                 -- check if (elem^{-1}*elem = id) as well
+                                     (Just p) -> if dot p elem group == identity
+                                                 then possibleInv
+                                                 else Nothing
+                                     _        -> Nothing
+       _                     -> Nothing
+
+-- all elements in Group have inverses
+hasInvs :: Group -> Bool
+hasInvs (Group set rows) =
+  let group = (Group set rows)
+      elemHasInv :: Element -> Bool
+      elemHasInv elem =
+        case getInv elem group of
+          Nothing -> False
+          _       -> True
+  in foldr (&&) True (map elemHasInv set)
+
+-- checks if group is closed under the binary operation
+isClosed :: Group -> Bool
+isClosed (Group set rows) = foldr (&&) True (map (\l -> foldr (&&) True (map (\e -> e `elem` set) l)) rows)
