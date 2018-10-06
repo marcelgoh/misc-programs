@@ -1,4 +1,4 @@
 import Analyze
 import Tables
 
--- TODO: Make a main procedure.
+-- IN THE FUTURE: Make a main procedure so that program can run compiled.

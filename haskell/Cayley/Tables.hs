@@ -84,6 +84,13 @@ triangleTable = [[e,a,b,c,d,f],
                  [f,b,c,a,e,d]]
 triangleGroup :: Group
 triangleGroup = Group triangleSet triangleTable
+-- jumbled up
+jumbled :: Group
+jumbled = Group [a,b,c,d,e] [[e,d,b,a,c],
+                             [d,c,e,b,a],
+                             [b,e,a,c,d],
+                             [a,b,c,d,e],
+                             [c,a,d,e,b]]
 
 -- NOT GROUPS 
 -- addition without 0 (no identity)

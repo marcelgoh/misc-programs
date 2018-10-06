@@ -49,18 +49,6 @@ getCols rows =
           _    -> iter ((map head rowsLeft) : acc) (map tail rowsLeft)
   in iter [] rows
 
--- determines if given group is abelian
-abelian :: Group -> Bool
-abelian (Group _ rows) =
-  let cols = getCols rows
-      -- both tables must be of equal size (but all Cayley tables should be square anyway)
-      tableEquals :: [[Element]] -> [[Element]] -> Bool
-      tableEquals t1 t2 =
-        case t1 of
-          [] -> True
-          _  -> if head t1 /= head t2 then False else tableEquals (tail t1) (tail t2)
-  in tableEquals rows cols
-
 -- checks if each row and column in table contains all unique elements
 noRepeats :: Group -> Bool
 noRepeats (Group _ rows) =
@@ -196,3 +184,9 @@ associative (Group set rows) =
 -- inverses, and associativity
 isGroup :: Group -> Bool
 isGroup g = closed g && hasId g && hasInvs g && associative g
+
+-- determines if given group is abelian
+abelian :: Group -> Bool
+abelian (Group set rows) =
+  let cols = getCols rows
+  in isGroup (Group set rows) && equalGroup (Group set rows) (Group set cols)
