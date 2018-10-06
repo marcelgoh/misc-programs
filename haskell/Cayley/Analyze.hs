@@ -150,5 +150,49 @@ hasInvs (Group set rows) =
   in foldr (&&) True (map elemHasInv set)
 
 -- checks if group is closed under the binary operation
-isClosed :: Group -> Bool
-isClosed (Group set rows) = foldr (&&) True (map (\l -> foldr (&&) True (map (\e -> e `elem` set) l)) rows)
+closed :: Group -> Bool
+closed (Group set rows) = foldr (&&) True (map (\l -> foldr (&&) True (map (\e -> e `elem` set) l)) rows)
+
+-- checks if two groups are the same (simply compares rows - isomorphism doesn't count!)
+equalGroup :: Group -> Group -> Bool
+equalGroup (Group _ r1) (Group _ r2) =
+  let checkAllLists table1 table2 =
+        case table1 of
+          []   -> True
+          l:ls -> if l /= (head table2) then False else checkAllLists ls (tail table2)
+  in if length r1 /= length r2
+     then False
+     else checkAllLists r1 r2
+
+-- checks associativity using Light's Associativity Test (runs with O(n^3))
+associative :: Group -> Bool
+associative (Group set rows) =
+  let group = (Group set rows)
+      -- create a table given a binary operation on the group's set
+      makeTable :: (Element -> Element -> Element) -> [[Element]]
+      makeTable op =
+        let construct acc elems =
+              case elems of
+                []   -> reverse acc
+                e:es -> construct ((map (\y -> op e y) set) : acc) es
+        in construct [] set
+      -- define multiplication within the group
+      times :: Element -> Element -> Element
+      times g h =
+        fromJust (dot g h group)
+      -- checks if an element is associative between every two other elements in the group
+      sandwichElement :: Element -> Bool
+      sandwichElement a =
+        let -- define two new binary operations
+            star = makeTable (\x y -> x `times` (a `times` y))
+            circle = makeTable (\x y -> (x `times` a) `times` y)
+        in -- check if they still produce the same table
+           equalGroup (Group set star) (Group set circle)
+  in if closed group  -- if group is not closed, it cannot possibly be associative
+     then foldr (&&) True (map sandwichElement set)
+     else False
+
+-- checks if table represents a group by combining checks for closure, identity,
+-- inverses, and associativity
+isGroup :: Group -> Bool
+isGroup g = closed g && hasId g && hasInvs g && associative g
