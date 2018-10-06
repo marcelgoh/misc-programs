@@ -55,6 +55,35 @@ Get the inverse without a worry!
 Just (Int 23)
 ```
 Checks for associativity and commutativity work out of the box as well!
-
+```
+*Main> associative quatGroup
+True
+*Main> printCayley triangleGroup
+  * |   e   a   b   c   d   f
+------------------------------
+  e |   e   a   b   c   d   f
+  a |   a   e   d   f   b   c
+  b |   b   f   e   d   c   a
+  c |   c   d   f   e   a   b
+  d |   d   c   a   b   f   e
+  f |   f   b   c   a   e   d
+*Main> abelian triangleGroup
+False
+```
+And never let an imposter fool you!
+```
+*Main> isGroup triangleGroup
+True
+*Main> printCayley notAssoc
+  * |   a   b   c   d   e
+--------------------------
+  a |   a   b   c   b   d
+  b |   b   c   a   e   c
+  c |   c   a   b   b   a
+  d |   b   e   b   e   d
+  e |   d   b   a   d   c
+*Main> isGroup notAssoc
+False
+```
 ## Authors
 Code: Marcel Goh
