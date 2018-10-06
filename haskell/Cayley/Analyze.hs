@@ -183,8 +183,7 @@ associative (Group set rows) =
 -- checks if table represents a group by combining checks for closure, identity,
 -- inverses, and associativity
 isGroup :: Group -> Bool
-isGroup g = closed g && hasId g && hasInvs g && associative g
-
+isGroup g = hasId g && hasInvs g && associative g
 -- determines if given group is abelian
 abelian :: Group -> Bool
 abelian (Group set rows) =
