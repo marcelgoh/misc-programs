@@ -56,10 +56,12 @@ z8 :: Group
 z8 = makeCyclic 8
 z17 :: Group
 z17 = makeCyclic 17
--- U(30)
+-- generates U(n)
+groupOfUnits :: Int -> Group
+groupOfUnits n = groupFromOperation [x | x <- [0..n-1], gcd x n == 1] (\x y -> (x*y) `mod` n)
+-- examples of U(n) for convenience
 thirtyGroup :: Group
 thirtyGroup = groupFromOperation [1,7,11,13,17,19,23,29] (\x y -> (x*y) `mod` 30)
--- U(60)
 sixtyGroup :: Group
 sixtyGroup = groupFromOperation [1,7,11,13,17,19,23,29,31,37,41,43,47,49,53,59] (\x y -> (x*y) `mod` 60)
 -- dihedral group D2
