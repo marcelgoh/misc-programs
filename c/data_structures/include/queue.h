@@ -1,7 +1,7 @@
 /* Header file for queue.c: Linked-list queue */
 
 /* a queue represented as linked list */
-typedef struct queue QUEUE;
+typedef struct queue_s QUEUE;
 
 
 /* construct a new queue */
