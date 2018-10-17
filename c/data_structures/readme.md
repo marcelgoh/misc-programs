@@ -2,8 +2,9 @@
 Some abstract data structures implemented in C. Currently contains:  
 + Singly-linked list
 + Queue
++ Stack
 
-To use these data types, change the code in `main.c` and compile using `make`:  
+To use these data types, change the code in `src/main.c` and compile using `make`:  
 ```
 $ make
 $ ./main

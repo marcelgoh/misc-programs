@@ -12,7 +12,7 @@
 #define ERR_VAL INT_MIN
 
 /* a queue is represented as a linked list */
-typedef struct queue {
+typedef struct queue_s {
     LL *list;
 } QUEUE;
 

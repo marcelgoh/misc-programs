@@ -3,10 +3,15 @@
  */
 
 #include <stdio.h>
+
 #include "linked.h"
 #include "queue.h"
 
 int main() {
+    /* STACK TESTS */
+
+
+    /* QUEUE TESTS
     QUEUE *q = new_queue();
     enqueue(q, 5);
     enqueue(q, 14);
@@ -19,6 +24,7 @@ int main() {
     free_queue(&q);
     printf("%d\n", (q == NULL) ? 1: 0);
     printf("Fetched a %d\n", fetch(q));
+    */
 
     return 0;
 }
