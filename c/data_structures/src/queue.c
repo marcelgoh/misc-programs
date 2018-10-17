@@ -80,7 +80,7 @@ int print_queue(const QUEUE *q) {
     return print_ll(q->list);
 }
 
-/* testing */
+/* testing
 int main() {
     QUEUE *q = new_queue();
     enqueue(q, 5);
@@ -97,3 +97,4 @@ int main() {
 
     return 0;
 }
+*/
