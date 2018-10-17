@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "linked.h"
 
 #define ERR_VAL INT_MIN
@@ -38,8 +39,12 @@ LL *new_ll() {
 }
 
 /* delete a linked list and free memory */
-int free_ll(LL *list) {
-    NODE *curr = list->head;
+int free_ll(LL **list) {
+    if (*list == NULL) {
+        printf("Passed a NULL list: LINKED.FREE_LL\n");
+        return ERR_VAL;
+    }
+    NODE *curr = (*list)->head;
     NODE *temp;
 
     /* free every node in the list */
@@ -49,13 +54,19 @@ int free_ll(LL *list) {
         free(temp);
     }
     /* free the linked list */
-    free(list);
+    free(*list);
+    *list = NULL;
+
 
     return 0;
 }
 
 /* add node containing n to the front of the list */
 int add_first(LL *list, int n) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.ADD_FIRST\n");
+        return ERR_VAL;
+    }
     NODE *new = new_node(n);
 
     if (list->head == NULL) {
@@ -73,6 +84,10 @@ int add_first(LL *list, int n) {
 
 /* add node containing n to the end of the list */
 int add_last(LL *list, int n) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.ADD_LAST\n");
+        return ERR_VAL;
+    }
     NODE *new = new_node(n);
 
     if (list->head == NULL) {
@@ -89,6 +104,10 @@ int add_last(LL *list, int n) {
 
 /* return (but don't remove) the first int in the list */
 int get_first(const LL *list) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.GET_FIRST\n");
+        return ERR_VAL;
+    }
     if (list->head == NULL) {
         printf("List is empty: LINKED.GET_FIRST\n");
         return ERR_VAL;
@@ -99,6 +118,10 @@ int get_first(const LL *list) {
 
 /* return the last int in the list */
 int get_last(const LL *list) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.GET_LAST\n");
+        return ERR_VAL;
+    }
     if (list->tail == NULL) {
         printf("List is empty: LINKED.GET_LAST\n");
         return ERR_VAL;
@@ -109,6 +132,10 @@ int get_last(const LL *list) {
 
 /* return the value at index */
 int get_val_at(const LL *list, int index) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.GET_VAL_AT\n");
+        return ERR_VAL;
+    }
     if (index == 0) {
         return get_first(list);
     } else if (index < 0 || index >= get_size_ll(list)) {
@@ -128,11 +155,19 @@ int get_val_at(const LL *list, int index) {
 
 /* get the current size of list */
 int get_size_ll(const LL *list) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.GET_SIZE_LL\n");
+        return ERR_VAL;
+    }
     return list->size;
 }
 
 /* remove (and return) first int in list */
 int remove_first(LL *list) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.REMOVE_FIRST\n");
+        return ERR_VAL;
+    }
     if (list->head == NULL) {
         printf("List is empty: LINKED.REMOVE_FIRST\n");
         return ERR_VAL;
@@ -154,6 +189,10 @@ int remove_first(LL *list) {
 
 /* remove (and return) int at index (runs in linear time) */
 int remove_val_at(LL *list, int index) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.REMOVE_VAL_AT\n");
+        return ERR_VAL;
+    }
     if (index == 0) {
         return remove_first(list);
     } else if (index < 0 || index >= get_size_ll(list)) {
@@ -184,11 +223,19 @@ int remove_val_at(LL *list, int index) {
 
 /* remove and return last int in list (linear) */
 int remove_last(LL *list) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.REMOVE_LAST\n");
+        return ERR_VAL;
+    }
     return remove_val_at(list, get_size_ll(list) - 1);
 }
 
 /* print all elements of list to screen */
 int print_ll(const LL *list) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.PRINT_LL\n");
+        return ERR_VAL;
+    }
     NODE *curr = list->head;
     while (curr != NULL) {
         printf("%d ", curr->data);
@@ -199,7 +246,7 @@ int print_ll(const LL *list) {
     return 0;
 }
 
-/* testing */
+/* testing
 int main() {
     LL *list = new_ll();
     add_first(list, 1);
@@ -210,8 +257,10 @@ int main() {
     printf("%d\n", get_val_at(list, 2));
     print_ll(list);
     remove_val_at(list, 4);
+    free_ll(&list);
+    printf("%d\n", (list == NULL) ? 1 : 0);
     print_ll(list);
 
     return 0;
 }
-
+*/

@@ -14,7 +14,7 @@ NODE *new_node(int n);
 LL *new_ll();
 
 /* delete a list and free memory */
-int free_ll(LL *list);
+int free_ll(LL **list);
 
 /* add int to front of list */
 int add_first(LL *list, int n);
