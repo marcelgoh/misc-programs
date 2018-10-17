@@ -4,6 +4,8 @@
 !*.*
 # Unignore all directories
 !*/
+# Unignore Makefile
+!Makefile
 ### ALL FILES WITHOUT EXTENSION NOW IGNORED ###
 
 # OS generated files #
@@ -15,3 +17,4 @@
 *.out
 *.o
 *.hi
+*.d
