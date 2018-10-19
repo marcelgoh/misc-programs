@@ -21,5 +21,8 @@ int pop(STACK *stack);
 /* get (but don't pop) first integer on stack */
 int peek(const STACK *stack);
 
+/* returns 1 if stack is empty and 0 otherwise */
+int is_empty_stack(const STACK *stack);
+
 /* print contents of stack in FIFO order */
 int print_stack(const STACK *stack);

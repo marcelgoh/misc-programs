@@ -9,7 +9,7 @@
 #include "stack.h"
 
 int main() {
-    /* LINKED LIST TESTS */
+    /* LINKED LIST TESTS
     LL *list = new_ll();
     add_first(list, 1);
     add_first(list, 3);
@@ -22,10 +22,13 @@ int main() {
     print_ll(list);
     remove_val_at(list, 4);
     free_ll(&list);
+    */
 
-    /* STACK TESTS
+    /* STACK TESTS */
     STACK *stack = new_stack();
+    printf("Is stack empty? %d\n", is_empty_stack(stack));
     push(stack, 4);
+    printf("Is stack empty? %d\n", is_empty_stack(stack));
     push(stack, 1);
     push(stack, 3);
     print_stack(stack);
@@ -37,9 +40,9 @@ int main() {
     printf("Peeked at a %d\n", peek(stack));
     print_stack(stack);
     free_stack(&stack);
+    printf("Is stack empty? %d\n", is_empty_stack(stack));
     printf("%d\n", (stack == NULL) ? 1 : 0);
     printf("Peeked at a %d\n", peek(stack));
-    */
 
     /* QUEUE TESTS
     QUEUE *q = new_queue();

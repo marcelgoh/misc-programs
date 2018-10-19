@@ -19,5 +19,8 @@ int dequeue(QUEUE *q);
 /* get value at the front without modifying queue */
 int fetch(const QUEUE *q);
 
+/* returns 1 if queue is empty and 0 otherwise */
+int is_empty_queue(const QUEUE *q);
+
 /* print queue in LIFO order */
 int print_queue(const QUEUE *q);

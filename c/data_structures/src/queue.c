@@ -71,6 +71,15 @@ int fetch(const QUEUE *q) {
     return ret_val;
 }
 
+/* returns 1 if queue is empty and 0 otherwise */
+int is_empty_queue(const QUEUE *q) {
+    if (q == NULL) {
+        printf("Passed a NULL queue: QUEUE.IS_EMPTY_QUEUE\n");
+        return ERR_VAL;
+    }
+    return (get_size_ll(q->list) == 0);
+}
+
 /* print contents of queue in LIFO order */
 int print_queue(const QUEUE *q) {
     if (q == NULL) {

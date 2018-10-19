@@ -70,6 +70,15 @@ int peek(const STACK *stack) {
     return ret_val;
 }
 
+/* returns 1 if stack is empty and 0 otherwise */
+int is_empty_stack(const STACK *stack) {
+    if (stack == NULL) {
+        printf("Passed a NULL stack: STACK.IS_EMPTY_STACK\n");
+        return ERR_VAL;
+    }
+    return (get_size_ll(stack->list) == 0);
+}
+
 /* print contents of stack in FIFO order */
 int print_stack(const STACK *stack) {
     if (stack == NULL) {
