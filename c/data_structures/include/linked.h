@@ -43,5 +43,8 @@ int remove_val_at(LL *list, int index);
 /* remove and return last int in list */
 int remove_last(LL *list);
 
+/* reverse a stack in-place */
+int reverse_ll(LL *list);
+
 /* print contents of list to screen in order from first to last */
 int print_ll(const LL *list);

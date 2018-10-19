@@ -230,6 +230,34 @@ int remove_last(LL *list) {
     return remove_val_at(list, get_size_ll(list) - 1);
 }
 
+/* reverse a stack in-place */
+int reverse_ll(LL *list) {
+    if (list == NULL) {
+        printf("Passed a NULL list: LINKED.REVERSE_LL\n");
+        return ERR_VAL;
+    }
+    /* list is empty or of size 1 */
+    if (list->size == 0 || list->size == 1) {
+        return 0;
+    }
+    /* we need three pointers to store info */
+    NODE *prev = NULL;
+    NODE *curr = list->head;
+    NODE *prox;
+
+    /* loop through, changing direction of pointers */
+    list->tail = curr;
+    while (curr != NULL) {
+        prox = curr->next;
+        curr->next = prev;
+        prev = curr;
+        curr = prox;
+    }
+    list->head = prev;
+
+    return 0;
+}
+
 /* print all elements of list to screen */
 int print_ll(const LL *list) {
     if (list == NULL) {
@@ -245,22 +273,3 @@ int print_ll(const LL *list) {
 
     return 0;
 }
-
-/* testing
-int main() {
-    LL *list = new_ll();
-    add_first(list, 1);
-    add_first(list, 3);
-    add_last(list, 4);
-    add_last(list, 10);
-    add_last(list, 4);
-    printf("%d\n", get_val_at(list, 2));
-    print_ll(list);
-    remove_val_at(list, 4);
-    free_ll(&list);
-    printf("%d\n", (list == NULL) ? 1 : 0);
-    print_ll(list);
-
-    return 0;
-}
-*/
