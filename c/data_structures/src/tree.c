@@ -10,10 +10,10 @@
 #define RED 'r'
 #define BLACK 'b'
 
-/* a single leaf on the tree */
+/* a single leaf on the tree (ALL NODES ARE CALLED LEAVES) */
 typedef struct leaf_s {
     int data;
-    /* 'r'ed or 'b'lack */
+    /* RED or BLACK */
     char colour;
     LEAF* parent;
     LEAF* left;
@@ -45,4 +45,45 @@ TREE* new_tree() {
     tree->root = NULL;
     tree->size = 0;
     return tree;
+}
+
+/* recursive function to delete a leaf and all its children */
+int free_leaf_rec(LEAF **leaf) {
+    if (*leaf == NULL) {
+        printf("Passed a NULL leaf: FREE_LEAF_REC\n");
+        return ERR_VAL;
+    }
+    /* free left and right subtrees */
+    if ((*leaf)->left != NULL) {
+        free_leaf_rec((*leaf)->left);
+    }
+    if ((*leaf)->right != NULL) {
+        free_leaf_rec((*leaf)->right);
+    }
+    /* free current leaf */
+    free(*leaf);
+    *leaf = NULL;
+
+    return 0;
+}
+
+/* delete tree and free memory */
+int free_tree(TREE **tree) {
+    if (*tree == NULL) {
+        printf("Passed a NULL tree: FREE_TREE\n");
+        return ERR_VAL;
+    }
+    /* free all leaves of tree */
+    if ((*tree)->root != NULL) {
+        free_leaf_rec((*tree)->root);
+    }
+    free(*tree);
+    *tree = NULL;
+
+    return 0;
+}
+
+/* insert a new integer into tree */
+int insert(TREE *tree, int n) {
+    return 0;
 }
