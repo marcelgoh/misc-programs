@@ -13,7 +13,11 @@
 /* a single leaf on the tree (ALL NODES ARE CALLED LEAVES) */
 typedef struct leaf_s LEAF;
 struct leaf_s {
-    int data;
+    int key;
+    /* for simplicity's sake, all values are just chars, but
+     * the data structure could be reimplemented with other data
+     */
+    char value;
     /* RED or BLACK */
     char colour;
     LEAF* parent;
@@ -28,13 +32,14 @@ typedef struct tree_s {
 } TREE;
 
 /* construct a new coloured leaf containing integer */
-LEAF* new_leaf(int n, char clr) {
+LEAF* new_leaf(int k, char v, char clr) {
     if (clr != RED && clr != BLACK) {
         printf("Colour must be red or black: TREE.NEW_LEAF\n");
         return NULL;
     }
     LEAF* new = (LEAF*) malloc(sizeof(LEAF));
-    new->data = n;
+    new->key = k;
+    new->value = v;
     new->colour = clr;
     new->parent = new->left = new->right = NULL;
     return new;
@@ -90,7 +95,7 @@ int print_leaf_rec(const LEAF *leaf) {
         printf("Passed a NULL leaf: TREE.PRINT_LEAF_REC\n");
         return ERR_VAL;
     }
-    printf("(%d", leaf->data);
+    printf("(%c", leaf->value);
     if (leaf->left == NULL) {
         printf(" ()");
     } else {
@@ -119,13 +124,106 @@ int print_tree(const TREE *tree) {
     return 0;
 }
 
-/* helper function to sink the leaf to the right spot in BST */
-int sink(LEAF* leaf, LEAF* curr_node) {
-    if (leaf->data == curr_node->data) {
-        printf("Encountered duplicate: TREE.SINK");
+/* return sibling of a leaf, NULL if none found */
+LEAF* sibling(const LEAF *leaf) {
+    LEAF *p = leaf->parent;
+    if (p == NULL) {
+        return NULL;
+    }
+    if (leaf == p->left) {
+        return p->right;
+    } else {
+        return p->left;
+    }
+}
+
+/* return grandparent of leaf, NULL if none found */
+LEAF* grandparent(const LEAF *leaf) {
+    LEAF *p = leaf->parent;
+    if (p == NULL) {
+        return NULL;
+    } else {
+        return p->parent;
+    }
+}
+
+/* return uncle of leaf, NULL if none found */
+LEAF* uncle(const LEAF *leaf) {
+    LEAF *p = leaf->parent;
+    if (p == NULL) {
+        return NULL;
+    } else {
+        return sibling(p);
+    }
+}
+
+/* rotate left at leaf */
+int rotate_left(LEAF *leaf) {
+    LEAF *new = leaf->right;
+    /* if there is no right subtree, we cannot rotate left */
+    if (new == NULL) {
+        printf("Null right subtree: TREE.ROTATE_LEFT\n");
         return ERR_VAL;
     }
-    if (leaf->data < curr_node->data) {
+    LEAF *p = leaf->parent;
+    /* perform rotation */
+    leaf->right = new->left;
+    new->left = leaf;
+    leaf->parent = new;
+    /* update leaf's right's parent pointer */
+    if (leaf->right != NULL) {
+        leaf->right->parent = leaf;
+    }
+    if (p != NULL) {
+        /* replace leaf with new node in the parent leaf */
+        if (leaf == p->left) {
+            p->left = new;
+        } else if (leaf == p->right) {
+            p->right = new;
+        }
+    }
+    new->parent = p;
+
+    return 0;
+}
+
+/* rotate right at leaf */
+int rotate_right(LEAF *leaf) {
+    LEAF * new = leaf->left;
+    /* if there is no left subtree, we cannot rotate right */
+    if (new == NULL) {
+        printf("Null left subtree: TREE.ROTATE_RIGHT\n");
+        return ERR_VAL;
+    }
+    LEAF *p = leaf->parent;
+    /* perform rotation */
+    leaf->left = new->right;
+    new->right = leaf;
+    leaf->parent = new;
+    /* update leaf's left's parent pointer */
+    if (leaf->left != NULL) {
+        leaf->left->parent = leaf;
+    }
+    if (p != NULL) {
+        /* replace leaf with new node in the parent leaf */
+        if (leaf == p->left) {
+            p->left = new;
+        } else if (leaf == p->right) {
+            p->right = new;
+        }
+    }
+    new->parent = p;
+
+    return 0;
+}
+
+
+/* helper function to sink the leaf to the right spot in BST */
+int sink(LEAF* leaf, LEAF* curr_node) {
+    /* if the key already exists in the tree, replace its value with new value */
+    if (leaf->key == curr_node->key) {
+        curr_node->value = leaf->value;
+    } else if (leaf->key < curr_node->key) {
         if (curr_node->left == NULL) {
             curr_node->left = leaf;
             leaf->parent = curr_node;
@@ -144,13 +242,13 @@ int sink(LEAF* leaf, LEAF* curr_node) {
     return 0;
 }
 
-
-/* insert a new integer into tree */
-int insert(TREE *tree, int n) {
+/* insert a new key-value pair into tree */
+int insert(TREE *tree, int k, char v) {
     /* create a new leaf */
-    LEAF *leaf = new_leaf(n, RED);
+    LEAF *leaf = new_leaf(k, v, RED);
     if (tree->root == NULL) {
         tree->root = leaf;
+        leaf->colour = BLACK;
     } else {
         sink(leaf, tree->root);
     }
@@ -159,15 +257,53 @@ int insert(TREE *tree, int n) {
     return 0;
 }
 
+/* recursive helper function to get value associated with key */
+LEAF* search(int k, LEAF *curr_node) {
+    if (curr_node == NULL) {
+        return NULL;
+    }
+    int this_key = curr_node->key;
+    if (k == this_key) {
+        return curr_node;
+    } else if (k < this_key) {
+        return search(k, curr_node->left);
+    } else {
+        return search(k, curr_node->right);
+    }
+}
+
+/* finds and returns the value associated with a certain key
+ * returns '\0' if key not found
+ */
+char find(const TREE *tree, int k) {
+    if (tree == NULL) {
+        return '\0';
+    }
+    LEAF *node = search(k, tree->root);
+
+    if (node == NULL) {
+        return '\0';
+    } else {
+        return node->value;
+    }
+}
+
 int main() {
     TREE *tree = new_tree();
 
-    insert(tree, 8);
-    insert(tree, 3);
-    insert(tree,10);
-    insert(tree,6);
-    insert(tree,9);
+    insert(tree,8,'h');
+    insert(tree,3,'c');
+    insert(tree,10,'j');
+    insert(tree,6,'f');
+    insert(tree,9,'i');
+    insert(tree,5,'e');
+    insert(tree,1,'a');
+    insert(tree,7,'g');
 
+    print_tree(tree);
+
+    LEAF* three = search(3, tree->root);
+    rotate_right(three);
     print_tree(tree);
 
     return 0;
