@@ -10,7 +10,7 @@
 #define RED 'r'
 #define BLACK 'b'
 
-/* a single leaf on the tree (ALL NODES ARE CALLED LEAVES) */
+/* a single leaf on the tree (ALL NODES ARE CALLED LEAVES to prevent name clash) */
 typedef struct leaf_s LEAF;
 struct leaf_s {
     int key;
@@ -96,6 +96,9 @@ int print_leaf_rec(const LEAF *leaf) {
         return ERR_VAL;
     }
     printf("(%c", leaf->value);
+    if (leaf->colour == BLACK) {
+        printf("-");
+    }
     if (leaf->left == NULL) {
         printf(" ()");
     } else {
@@ -242,16 +245,71 @@ int sink(LEAF* leaf, LEAF* curr_node) {
     return 0;
 }
 
+/* takes in a tree and the node just inserted and repairs the tree */
+int insert_repair(TREE *tree, LEAF *leaf) {
+    LEAF *p = leaf->parent;
+    if (p == NULL) {
+        /* if leaf is root, change colour to black and we're done */
+        leaf->colour = BLACK;
+        tree->root = leaf;
+    } else {
+        LEAF *u = uncle(leaf);
+        LEAF *g = grandparent(leaf);
+        /* if leaf's parent is black we are done because leaf is red */
+        if (p->colour != BLACK) {
+            if (u == NULL || u->colour == BLACK) {
+                /* uncle is black or null: there are four cases to consider */
+                if (p == g->left) {
+                    if (leaf == p->right) {
+                        /* CASE: leaf is left-right grand-child */
+                        rotate_left(p);
+                        /* now it looks like left-left case (but with leaf and p flipped) */
+                    }
+                    /* CASE: leaf is left-left grand-child of its grandparent */
+                    rotate_right(g);
+                } else {
+                    if (leaf == p->left) {
+                        /* CASE leaf is right-left grand-child */
+                        rotate_right(p);
+                        /* now it looks (almost) like right-right case */
+                    }
+                    /* CASE leaf is right-right grand-child */
+                    rotate_left(g);
+                }
+                /* recolour grandparent and its new parent */
+                g->colour = RED;
+                g->parent->colour = BLACK;
+                if (tree->root == g) {
+                    /* if the grandparent used to be the root, set it to the new parent */
+                    tree->root = g->parent;
+                }
+            } else {
+                /* uncle is red: the structure is OK but we need to recolour the tree */
+                p->colour = BLACK;
+                u->colour = BLACK;
+                g->colour = RED;
+                /* set grandparent as leaf and recurse */
+                insert_repair(tree, g);
+            }
+        }
+    }
+    return 0;
+}
+
+
+
 /* insert a new key-value pair into tree */
 int insert(TREE *tree, int k, char v) {
     /* create a new leaf */
     LEAF *leaf = new_leaf(k, v, RED);
+    /* perform normal BST insertion */
     if (tree->root == NULL) {
         tree->root = leaf;
-        leaf->colour = BLACK;
     } else {
         sink(leaf, tree->root);
     }
+    /* repair colours and structure of tree */
+    insert_repair(tree, leaf);
 
     ++(tree->size);
     return 0;
@@ -293,17 +351,15 @@ int main() {
 
     insert(tree,8,'h');
     insert(tree,3,'c');
-    insert(tree,10,'j');
+    insert(tree,12,'l');
     insert(tree,6,'f');
     insert(tree,9,'i');
     insert(tree,5,'e');
     insert(tree,1,'a');
     insert(tree,7,'g');
+    insert(tree,2,'b');
+    insert(tree,4,'d');
 
-    print_tree(tree);
-
-    LEAF* three = search(3, tree->root);
-    rotate_right(three);
     print_tree(tree);
 
     return 0;
