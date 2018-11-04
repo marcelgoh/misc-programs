@@ -1,5 +1,6 @@
 /* Various sorting algorithms in C
- * Work in progress
+ * Work in progress: in particular, it might be better to
+ * count comparisons rather than swaps.
  */
 
 #include <stdio.h>
@@ -71,7 +72,7 @@ int partition(int* list, int lo, int hi, int *num_swaps) {
     return i;
 }
 
-/* sorts a list of numbers */
+/* quicksort algorithm */
 void quicksort(int *list, int lo, int hi, int *num_swaps) {
     if (lo >= hi) {
         return;
@@ -83,6 +84,26 @@ void quicksort(int *list, int lo, int hi, int *num_swaps) {
     quicksort(list, lo, p-1, num_swaps);
     quicksort(list, p+1, hi, num_swaps);
 }
+
+/* bubble sort algorithm */
+void bubblesort(int *list, int size, int *num_swaps) {
+    int swapped;
+    for (int i=0; i<size-1; ++i) {
+        swapped = 0;
+
+        for (int j=i+1; j<size; ++j) {
+            if (list[i] > list[j]) {
+                swap(list, i, j, num_swaps);
+                swapped = 1;
+            }
+        }
+        if (swapped == 0) {
+            break;
+        }
+    }
+}
+
+
 
 /* main procedure */
 int main() {
@@ -99,10 +120,12 @@ int main() {
 
     int *num_swaps = (int*) malloc(sizeof(int));
     *num_swaps = 0;
-    shuffle(list, size, num_swaps);
-    quicksort(list, 0, size-1, num_swaps);
-    printf("Quicksort took %d swaps.\n", *num_swaps);
+    //shuffle(list, size, num_swaps);
+    //quicksort(list, 0, size-1, num_swaps);
+    //printf("Quicksort took %d swaps.\n", *num_swaps);
 
+    bubblesort(list, size, num_swaps);
+    printf("Bubblesort took %d swaps.\n", *num_swaps);
     print_list(list, size);
     return 0;
 }
