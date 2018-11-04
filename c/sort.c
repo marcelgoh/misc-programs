@@ -31,10 +31,12 @@ void print_list(const int* list, int size) {
 
 /* swap elements at indices i and j in list, increments a counter in background */
 int swap(int *list, int i, int j, int *num_swaps) {
-    int temp = list[i];
-    list[i] = list[j];
-    list[j] = temp;
-    ++(*num_swaps);
+    if (i != j) {
+        int temp = list[i];
+        list[i] = list[j];
+        list[j] = temp;
+        ++(*num_swaps);
+    }
 
     return 0;
 }
@@ -58,9 +60,9 @@ int partition(int* list, int lo, int hi, int *num_swaps) {
     int pivot = list[hi];
 
     int i = lo;
-    for (int j=lo+1; j<=hi; ++j){
+    for (int j=lo; j<hi; ++j){
         if (list[j] <= pivot) {
-            swap(list, ++i, j, num_swaps);
+            swap(list, i++, j, num_swaps);
         }
     }
     swap(list, i, hi, num_swaps);
