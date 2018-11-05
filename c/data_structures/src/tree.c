@@ -9,6 +9,7 @@
 #define ERR_VAL INT_MIN
 #define RED 'r'
 #define BLACK 'b'
+#define DOUBLE_BLACK 'd'
 
 /* a single leaf on the tree (ALL NODES ARE CALLED LEAVES to prevent name clash) */
 typedef struct leaf_s LEAF;
@@ -258,7 +259,7 @@ int insert_repair(TREE *tree, LEAF *leaf) {
         /* if leaf's parent is black we are done because leaf is red */
         if (p->colour != BLACK) {
             if (u == NULL || u->colour == BLACK) {
-                /* uncle is black or null: there are four cases to consider */
+                /* uncle is black or null: there are FOUR cases to consider */
                 if (p == g->left) {
                     if (leaf == p->right) {
                         /* CASE: leaf is left-right grand-child */
@@ -269,11 +270,11 @@ int insert_repair(TREE *tree, LEAF *leaf) {
                     rotate_right(g);
                 } else {
                     if (leaf == p->left) {
-                        /* CASE leaf is right-left grand-child */
+                        /* CASE: leaf is right-left grand-child */
                         rotate_right(p);
                         /* now it looks (almost) like right-right case */
                     }
-                    /* CASE leaf is right-right grand-child */
+                    /* CASE: leaf is right-right grand-child */
                     rotate_left(g);
                 }
                 /* recolour grandparent and its new parent */
@@ -315,7 +316,7 @@ int insert(TREE *tree, int k, char v) {
     return 0;
 }
 
-/* recursive helper function to get value associated with key */
+/* recursive helper function to get leaf associated with key */
 LEAF* search(int k, LEAF *curr_node) {
     if (curr_node == NULL) {
         return NULL;
@@ -346,6 +347,66 @@ char find(const TREE *tree, int k) {
     }
 }
 
+/* return pointer to the smallest element in subtree rooted at leaf */
+LEAF* get_min(LEAF *leaf) {
+    if (leaf->left == NULL) {
+        return leaf;
+    } else {
+        return get_min(leaf->left);
+    }
+}
+
+/* delete leaf u and replace it with its child v, while maintaining tree properties */
+LEAF* delete_repair(TREE *tree, LEAF *u, LEAF *v) {
+    LEAF *p = u->parent;
+    if (p == NULL) {
+        tree->root = v;
+    } else {
+        if (u == p->left) {
+            p->left = v;
+        } else {
+            p->right = v;
+        }
+    }
+    if (v != NULL) {
+        v->parent = p;
+    }
+
+    return u;
+}
+
+
+/* recursive method to delete leaf from tree */
+LEAF* delete_leaf_rec(TREE *tree, LEAF *leaf) {
+    if (leaf->left != NULL && leaf->right != NULL) {
+        /* leaf has two children, so delete further down the tree */
+        LEAF *right_min = get_min(leaf->right);
+        leaf->key = right_min->key;
+        leaf->value = right_min->value;
+        return delete_leaf_rec(tree, right_min);
+    } else {
+        /* third argument to delete_repair call might be NULL (it's okay) */
+        if (leaf->left == NULL) {
+            return delete_repair(tree, leaf, leaf->right);
+        } else {
+            return delete_repair(tree, leaf, leaf->left);
+        }
+    }
+}
+
+/* deletes and returns node with given key if it exists
+ * returns '\0' if key not found
+ */
+LEAF* delete(TREE *tree, int k) {
+    if (tree == NULL) {
+        return NULL;
+    }
+    LEAF *leaf = search(k, tree->root);
+    delete_leaf_rec(tree, leaf);
+
+    return leaf;
+}
+
 int main() {
     TREE *tree = new_tree();
 
@@ -360,6 +421,11 @@ int main() {
     insert(tree,2,'b');
     insert(tree,4,'d');
 
+    print_tree(tree);
+
+    delete(tree,8);
+    print_tree(tree);
+    delete(tree,5);
     print_tree(tree);
 
     return 0;
