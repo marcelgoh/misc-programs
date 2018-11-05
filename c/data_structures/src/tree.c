@@ -10,6 +10,8 @@
 #define RED 'r'
 #define BLACK 'b'
 #define DOUBLE_BLACK 'd'
+#define NULL_INT INT_MIN
+#define NULL_CHAR '\0'
 
 /* a single leaf on the tree (ALL NODES ARE CALLED LEAVES to prevent name clash) */
 typedef struct leaf_s LEAF;
@@ -130,6 +132,10 @@ int print_tree(const TREE *tree) {
 
 /* return sibling of a leaf, NULL if none found */
 LEAF* sibling(const LEAF *leaf) {
+    if (leaf == NULL) {
+        printf("Passed a NULL leaf: TREE.SIBLING\n");
+        return NULL;
+    }
     LEAF *p = leaf->parent;
     if (p == NULL) {
         return NULL;
@@ -143,6 +149,10 @@ LEAF* sibling(const LEAF *leaf) {
 
 /* return grandparent of leaf, NULL if none found */
 LEAF* grandparent(const LEAF *leaf) {
+    if (leaf == NULL) {
+        printf("Passed a NULL leaf: TREE.GRANDPARENT\n");
+        return NULL;
+    }
     LEAF *p = leaf->parent;
     if (p == NULL) {
         return NULL;
@@ -153,6 +163,10 @@ LEAF* grandparent(const LEAF *leaf) {
 
 /* return uncle of leaf, NULL if none found */
 LEAF* uncle(const LEAF *leaf) {
+    if (leaf == NULL) {
+        printf("Passed a NULL leaf: TREE.UNCLE\n");
+        return NULL;
+    }
     LEAF *p = leaf->parent;
     if (p == NULL) {
         return NULL;
@@ -221,9 +235,12 @@ int rotate_right(LEAF *leaf) {
     return 0;
 }
 
-
 /* helper function to sink the leaf to the right spot in BST */
 int sink(LEAF* leaf, LEAF* curr_node) {
+    if (leaf == NULL || curr_node == NULL) {
+        printf("One of the arguments is NULL: TREE.SINK\n");
+        return ERR_VAL;
+    }
     /* if the key already exists in the tree, replace its value with new value */
     if (leaf->key == curr_node->key) {
         curr_node->value = leaf->value;
@@ -297,10 +314,12 @@ int insert_repair(TREE *tree, LEAF *leaf) {
     return 0;
 }
 
-
-
 /* insert a new key-value pair into tree */
 int insert(TREE *tree, int k, char v) {
+    if (tree == NULL) {
+        printf("Passed a NULL tree: TREE.INSERT\n");
+        return ERR_VAL;
+    }
     /* create a new leaf */
     LEAF *leaf = new_leaf(k, v, RED);
     /* perform normal BST insertion */
@@ -356,23 +375,130 @@ LEAF* get_min(LEAF *leaf) {
     }
 }
 
-/* delete leaf u and replace it with its child v, while maintaining tree properties */
-LEAF* delete_repair(TREE *tree, LEAF *u, LEAF *v) {
-    LEAF *p = u->parent;
-    if (p == NULL) {
-        tree->root = v;
-    } else {
-        if (u == p->left) {
-            p->left = v;
-        } else {
-            p->right = v;
-        }
+/* delete leaf m and replace it with its child c, while maintaining tree properties */
+int delete_repair(TREE *tree, LEAF *m, LEAF *c) {
+    int c_null = (c == NULL) ? 1 : 0;
+    /* if c is null, make c a duplicate of m */
+    if (c_null) {
+        c = new_leaf(m->key, m->value, BLACK);
     }
-    if (v != NULL) {
-        v->parent = p;
+    LEAF *c_duplicate = c;
+    LEAF *p = m->parent;
+    /* replace m with c */
+    c->parent = p;
+    if (p != NULL) {
+        if (p->left == m) {
+            p->left = c;
+        } else {
+            p->right = c;
+        }
+    } else {
+        tree->root = c;
+    }
+    if (m->colour == RED || c->colour == RED) {
+        /* Simple case: just change child's colour and we're done */
+        c->colour = BLACK;
+    } else {
+        /* BOTH m and c are black:
+         * NOTE: if c is null, we do everything on m instead and delete m after
+         */
+        int done = 0;
+        LEAF *s;
+        /* dummy while loop to allow CASE 3 to jump back to CASE 1 if needed */
+        while (done == 0) {
+            done = 1;
+            /* CASE 1: c is the new root and we're done */
+            if (c->parent == NULL) {
+                printf("Here1\n");
+                tree->root = c;
+                break;
+            }
+            /* CASE 2: the sibling is red */
+            s = sibling(c);
+            if (s != NULL) {
+                printf("%c %c\n", s->value, s->colour);
+            }
+            if (s != NULL && s->colour == RED) {
+                printf("Here2\n");
+                c->parent->colour = RED;
+                s->colour = BLACK;
+                if (c == c->parent->left) {
+                    rotate_left(c->parent);
+                } else {
+                    rotate_right(c->parent);
+                }
+            }
+            s = sibling(c);
+            if ((s != NULL) &&
+                (s->colour == BLACK) &&
+                (s->left == NULL || s->left->colour == BLACK) &&
+                (s->right == NULL || s->right->colour == BLACK)) {
+                if (p->colour == BLACK) {
+                    printf("Here3\n");
+                    /* CASE 3: parent, sibling, and sibling's children are all black */
+                    s->colour = RED;
+                    c = c->parent;
+                    /* restart at CASE 1 */
+                    continue;
+                } else {
+                    /* CASE 4: sibling and its children are black, but parent is red */
+                    printf("Here4\n");
+                    s->colour = RED;
+                    c->parent->colour = BLACK;
+                    break;
+                }
+            }
+            /* CASE 5: s is black, s's left child is red, s's right child is black, c is a left child */
+            s = sibling(c);
+            printf("Here5\n");
+            if (s != NULL && s->colour == BLACK) {
+                if ((s->right == NULL || s->right->colour == BLACK) &&
+                    (s->left != NULL && s->left->colour == RED)) {
+                    s->colour = RED;
+                    if (c == c->parent->left) {
+                        s->left->colour = BLACK;
+                        rotate_right(s);
+                    } else {
+                        s->right->colour = BLACK;
+                        rotate_left(s);
+                    }
+                }
+            }
+            /* CASE 6: s is black, s's right child is red, c is a left child */
+            s = sibling(c);
+            printf("Here6\n");
+            if (s != NULL) {
+                s->colour = c->parent->colour;
+                c->parent->colour = BLACK;
+                if (c == c->parent->left) {
+                    if (s->right != NULL) {
+                        s->right->colour = BLACK;
+                    }
+                    rotate_left(c->parent);
+                } else {
+                    if (s->left != NULL) {
+                        s->left->colour = BLACK;
+                    }
+                    rotate_right(c->parent);
+                }
+            }
+        }
+        /* delete the duplicate if we made one */
+        if (c_null) {
+            if (c_duplicate->parent != NULL) {
+                if (c_duplicate == c_duplicate->parent->left) {
+                    c_duplicate->parent->left = NULL;
+                } else {
+                    c_duplicate->parent->right = NULL;
+                }
+            }
+            free(c_duplicate);
+        }
+        free(m);
     }
 
-    return u;
+
+    return 0;
 }
 
 
@@ -387,23 +513,25 @@ LEAF* delete_leaf_rec(TREE *tree, LEAF *leaf) {
     } else {
         /* third argument to delete_repair call might be NULL (it's okay) */
         if (leaf->left == NULL) {
-            return delete_repair(tree, leaf, leaf->right);
+            delete_repair(tree, leaf, leaf->right);
         } else {
-            return delete_repair(tree, leaf, leaf->left);
+            delete_repair(tree, leaf, leaf->left);
         }
+        return leaf;
     }
 }
 
-/* deletes and returns node with given key if it exists
- * returns '\0' if key not found
- */
+/* deletes and returns node with given key if it exists */
 LEAF* delete(TREE *tree, int k) {
     if (tree == NULL) {
+        printf("Passed a NULL tree: TREE.DELETE\n");
         return NULL;
     }
     LEAF *leaf = search(k, tree->root);
-    delete_leaf_rec(tree, leaf);
-
+    if (leaf != NULL) {
+        delete_leaf_rec(tree, leaf);
+        --(tree->size);
+    }
     return leaf;
 }
 
@@ -416,17 +544,33 @@ int main() {
     insert(tree,6,'f');
     insert(tree,9,'i');
     insert(tree,5,'e');
+    insert(tree,13,'m');
     insert(tree,1,'a');
     insert(tree,7,'g');
     insert(tree,2,'b');
     insert(tree,4,'d');
+    insert(tree,10,'j');
+    insert(tree,11,'k');
 
     print_tree(tree);
+    printf("%d\n", tree->size);
 
-    delete(tree,8);
+    delete(tree, 11);
     print_tree(tree);
-    delete(tree,5);
+    delete(tree, 9);
     print_tree(tree);
+    delete(tree, 13);
+    print_tree(tree);
+    delete(tree, 4);
+    print_tree(tree);
+    delete(tree, 1);
+    print_tree(tree);
+    delete(tree, 2);
+    print_tree(tree);
+    delete(tree, 3);
+    print_tree(tree);
+
+    printf("%d\n", tree->size);
 
     return 0;
 }
