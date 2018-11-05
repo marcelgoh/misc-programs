@@ -124,8 +124,12 @@ int print_tree(const TREE *tree) {
         printf("Passed a NULL tree: TREE.PRINT_TREE\n");
         return ERR_VAL;
     }
-    print_leaf_rec(tree->root);
-    printf("\n");
+    if (tree->size == 0) {
+        printf("()\n");
+    } else {
+        print_leaf_rec(tree->root);
+        printf("\n");
+    }
     return 0;
 }
 
@@ -175,7 +179,7 @@ LEAF* uncle(const LEAF *leaf) {
 }
 
 /* rotate left at leaf */
-int rotate_left(LEAF *leaf) {
+int rotate_left(TREE *tree, LEAF *leaf) {
     LEAF *new = leaf->right;
     /* if there is no right subtree, we cannot rotate left */
     if (new == NULL) {
@@ -198,6 +202,8 @@ int rotate_left(LEAF *leaf) {
         } else if (leaf == p->right) {
             p->right = new;
         }
+    } else {
+        tree->root = new;
     }
     new->parent = p;
 
@@ -205,7 +211,7 @@ int rotate_left(LEAF *leaf) {
 }
 
 /* rotate right at leaf */
-int rotate_right(LEAF *leaf) {
+int rotate_right(TREE* tree, LEAF *leaf) {
     LEAF * new = leaf->left;
     /* if there is no left subtree, we cannot rotate right */
     if (new == NULL) {
@@ -228,6 +234,8 @@ int rotate_right(LEAF *leaf) {
         } else if (leaf == p->right) {
             p->right = new;
         }
+    } else {
+        tree->root = new;
     }
     new->parent = p;
 
@@ -279,19 +287,19 @@ int insert_repair(TREE *tree, LEAF *leaf) {
                 if (p == g->left) {
                     if (leaf == p->right) {
                         /* CASE: leaf is left-right grand-child */
-                        rotate_left(p);
+                        rotate_left(tree, p);
                         /* now it looks like left-left case (but with leaf and p flipped) */
                     }
                     /* CASE: leaf is left-left grand-child of its grandparent */
-                    rotate_right(g);
+                    rotate_right(tree, g);
                 } else {
                     if (leaf == p->left) {
                         /* CASE: leaf is right-left grand-child */
-                        rotate_right(p);
+                        rotate_right(tree, p);
                         /* now it looks (almost) like right-right case */
                     }
                     /* CASE: leaf is right-right grand-child */
-                    rotate_left(g);
+                    rotate_left(tree, g);
                 }
                 /* recolour grandparent and its new parent */
                 g->colour = RED;
@@ -409,12 +417,12 @@ int delete_case6(TREE *tree, LEAF *leaf) {
         if (s != NULL) {
             set_colour(s->right, BLACK);
         }
-        rotate_left(leaf->parent);
+        rotate_left(tree, leaf->parent);
     } else {
         if (s != NULL) {
             set_colour(s->left, BLACK);
         }
-        rotate_right(leaf->parent);
+        rotate_right(tree, leaf->parent);
     }
     return 0;
 }
@@ -428,13 +436,13 @@ int delete_case5(TREE *tree, LEAF *leaf) {
             (get_colour(s->left) == RED)) {
             set_colour(s, RED);
             set_colour(s->left, BLACK);
-            rotate_right(s);
+            rotate_right(tree, s);
         } else if ((leaf == leaf->parent->right) &&
                    (get_colour(s->left) == BLACK) &&
                    (get_colour(s->right) == RED)) {
             set_colour(s, RED);
             set_colour(s->right, BLACK);
-            rotate_left(s);
+            rotate_left(tree, s);
         }
     }
     return delete_case6(tree, leaf);
@@ -467,9 +475,9 @@ int delete_case2(TREE *tree, LEAF *leaf) {
         set_colour(leaf->parent, RED);
         set_colour(s, BLACK);
         if (leaf == leaf->parent->left) {
-            rotate_left(leaf->parent);
+            rotate_left(tree, leaf->parent);
         } else {
-            rotate_right(leaf->parent);
+            rotate_right(tree, leaf->parent);
         }
     }
     return delete_cases34(tree, leaf);
@@ -506,8 +514,10 @@ int delete_repair(TREE *tree, LEAF *leaf, LEAF *child) {
     } else {
         tree->root = child;
     }
+    /* here if leaf is red we're actually done! */
     if (get_colour(leaf) == BLACK) {
         if (get_colour(child) == RED) {
+            /* if leaf was black and now child is red, just change child to black */
             set_colour(child, BLACK);
         } else {
             /* if both leaf and child are black, start the rigmarole we wrote upstairs */
@@ -516,6 +526,10 @@ int delete_repair(TREE *tree, LEAF *leaf, LEAF *child) {
         free(leaf);
     }
     if (child_null) {
+        if (child->left != NULL || child->right != NULL) {
+            /* this shouldn't happen, will remove once I'm happy it doesn't */
+            printf("Wut???\n");
+        }
         if (child->parent != NULL) {
             if (child->parent->left == child) {
                 child->parent->left = NULL;
@@ -600,6 +614,18 @@ int main() {
     delete(tree, 2);
     print_tree(tree);
     delete(tree, 3);
+    print_tree(tree);
+    delete(tree, 6);
+    print_tree(tree);
+    delete(tree, 7);
+    print_tree(tree);
+    delete(tree, 8);
+    print_tree(tree);
+    delete(tree, 5);
+    print_tree(tree);
+    delete(tree, 10);
+    print_tree(tree);
+    delete(tree, 12);
     print_tree(tree);
 
     printf("%d\n", tree->size);
