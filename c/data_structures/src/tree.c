@@ -1,5 +1,6 @@
 /* Red-black tree data-structure
- * Last updated 17 October 2018 by Marcel Goh
+ * Last updated 5 November 2018 by Marcel Goh
+ * Adapted from implementations found on GeeksforGeeks.com and Wikipedia
  */
 
 #include <limits.h>
@@ -9,9 +10,7 @@
 #define ERR_VAL INT_MIN
 #define RED 'r'
 #define BLACK 'b'
-#define DOUBLE_BLACK 'd'
-#define NULL_INT INT_MIN
-#define NULL_CHAR '\0'
+#define CHAR_NULL '\0'
 
 /* a single leaf on the tree (ALL NODES ARE CALLED LEAVES to prevent name clash) */
 typedef struct leaf_s LEAF;
@@ -375,135 +374,166 @@ LEAF* get_min(LEAF *leaf) {
     }
 }
 
-/* delete leaf m and replace it with its child c, while maintaining tree properties */
-int delete_repair(TREE *tree, LEAF *m, LEAF *c) {
-    int c_null = (c == NULL) ? 1 : 0;
-    /* if c is null, make c a duplicate of m */
-    if (c_null) {
-        c = new_leaf(m->key, m->value, BLACK);
-    }
-    LEAF *c_duplicate = c;
-    LEAF *p = m->parent;
-    /* replace m with c */
-    c->parent = p;
-    if (p != NULL) {
-        if (p->left == m) {
-            p->left = c;
-        } else {
-            p->right = c;
-        }
-    } else {
-        tree->root = c;
-    }
-    if (m->colour == RED || c->colour == RED) {
-        /* Simple case: just change child's colour and we're done */
-        c->colour = BLACK;
-    } else {
-        /* BOTH m and c are black:
-         * NOTE: if c is null, we do everything on m instead and delete m after
-         */
-        int done = 0;
-        LEAF *s;
-        /* dummy while loop to allow CASE 3 to jump back to CASE 1 if needed */
-        while (done == 0) {
-            done = 1;
-            /* CASE 1: c is the new root and we're done */
-            if (c->parent == NULL) {
-                printf("Here1\n");
-                tree->root = c;
-                break;
-            }
-            /* CASE 2: the sibling is red */
-            s = sibling(c);
-            if (s != NULL) {
-                printf("%c %c\n", s->value, s->colour);
-            }
-            if (s != NULL && s->colour == RED) {
-                printf("Here2\n");
-                c->parent->colour = RED;
-                s->colour = BLACK;
-                if (c == c->parent->left) {
-                    rotate_left(c->parent);
-                } else {
-                    rotate_right(c->parent);
-                }
-            }
-            s = sibling(c);
-            if ((s != NULL) &&
-                (s->colour == BLACK) &&
-                (s->left == NULL || s->left->colour == BLACK) &&
-                (s->right == NULL || s->right->colour == BLACK)) {
-                if (p->colour == BLACK) {
-                    printf("Here3\n");
-                    /* CASE 3: parent, sibling, and sibling's children are all black */
-                    s->colour = RED;
-                    c = c->parent;
-                    /* restart at CASE 1 */
-                    continue;
-                } else {
-                    /* CASE 4: sibling and its children are black, but parent is red */
-                    printf("Here4\n");
-                    s->colour = RED;
-                    c->parent->colour = BLACK;
-                    break;
-                }
-            }
-            /* CASE 5: s is black, s's left child is red, s's right child is black, c is a left child */
-            s = sibling(c);
-            printf("Here5\n");
-            if (s != NULL && s->colour == BLACK) {
-                if ((s->right == NULL || s->right->colour == BLACK) &&
-                    (s->left != NULL && s->left->colour == RED)) {
-                    s->colour = RED;
-                    if (c == c->parent->left) {
-                        s->left->colour = BLACK;
-                        rotate_right(s);
-                    } else {
-                        s->right->colour = BLACK;
-                        rotate_left(s);
-                    }
-                }
-            }
-            /* CASE 6: s is black, s's right child is red, c is a left child */
-            s = sibling(c);
-            printf("Here6\n");
-            if (s != NULL) {
-                s->colour = c->parent->colour;
-                c->parent->colour = BLACK;
-                if (c == c->parent->left) {
-                    if (s->right != NULL) {
-                        s->right->colour = BLACK;
-                    }
-                    rotate_left(c->parent);
-                } else {
-                    if (s->left != NULL) {
-                        s->left->colour = BLACK;
-                    }
-                    rotate_right(c->parent);
-                }
-            }
-        }
-        /* delete the duplicate if we made one */
-        if (c_null) {
-            if (c_duplicate->parent != NULL) {
-                if (c_duplicate == c_duplicate->parent->left) {
-                    c_duplicate->parent->left = NULL;
-                } else {
-                    c_duplicate->parent->right = NULL;
-                }
-            }
-            free(c_duplicate);
-        }
-        free(m);
-    }
+/* ########################################################################## */
+/* bunch of helper functions for delete_repair (roughly following Wikipedia)
+ * this is kind of ugly but I originally used a huge while loop
+ * and that was a nightmare to debug!
+ * the cases are in reverse order, in practice they will fall upwards from 1 to 6
+ */
 
+/* returns colour of leaf, works on NULL leaves (returns BLACK) */
+char get_colour(LEAF *leaf) {
+    if (leaf != NULL && leaf->colour == RED) {
+        return RED;
+    }
+    return BLACK;
+}
+
+/* sets colour of leaf if its not NULL, else it does nothing */
+int set_colour(LEAF *leaf, char clr) {
+    if (leaf != NULL) {
+        leaf->colour = clr;
+        return 0;
+    }
+    return 1;
+}
+
+int delete_case1(TREE *tree, LEAF *leaf);
+
+int delete_case6(TREE *tree, LEAF *leaf) {
+    printf("Here6\n");
+    LEAF *s = sibling(leaf);
+    set_colour(s, get_colour(leaf->parent));
+    set_colour(leaf->parent, BLACK);
+    if (leaf == leaf->parent->left) {
+        if (s != NULL) {
+            set_colour(s->right, BLACK);
+        }
+        rotate_left(leaf->parent);
+    } else {
+        if (s != NULL) {
+            set_colour(s->left, BLACK);
+        }
+        rotate_right(leaf->parent);
+    }
+    return 0;
+}
+
+int delete_case5(TREE *tree, LEAF *leaf) {
+    LEAF *s = sibling(leaf);
+    if (s != NULL && get_colour(s) == BLACK) {
+        printf("Here5\n");
+        if ((leaf == leaf->parent->left) &&
+            (get_colour(s->right) == BLACK) &&
+            (get_colour(s->left) == RED)) {
+            set_colour(s, RED);
+            set_colour(s->left, BLACK);
+            rotate_right(s);
+        } else if ((leaf == leaf->parent->right) &&
+                   (get_colour(s->left) == BLACK) &&
+                   (get_colour(s->right) == RED)) {
+            set_colour(s, RED);
+            set_colour(s->right, BLACK);
+            rotate_left(s);
+        }
+    }
+    return delete_case6(tree, leaf);
+}
+
+int delete_cases34(TREE *tree, LEAF *leaf) {
+    LEAF *s = sibling(leaf);
+    if ((s != NULL) &&
+        (get_colour(s->left) == BLACK) &&
+        (get_colour(s->right) == BLACK)) {
+        if (get_colour(leaf->parent) == BLACK) {
+            printf("Here3\n");
+            set_colour(s, RED);
+            return delete_case1(tree, leaf->parent);
+        } else {
+            printf("Here4\n");
+            set_colour(s, RED);
+            set_colour(leaf->parent, BLACK);
+            return 0;
+        }
+    } else {
+        return delete_case5(tree, leaf);
+    }
+}
+
+int delete_case2(TREE *tree, LEAF *leaf) {
+    LEAF *s = sibling(leaf);
+    if (get_colour(s) == RED) {
+        printf("Here2\n");
+        set_colour(leaf->parent, RED);
+        set_colour(s, BLACK);
+        if (leaf == leaf->parent->left) {
+            rotate_left(leaf->parent);
+        } else {
+            rotate_right(leaf->parent);
+        }
+    }
+    return delete_cases34(tree, leaf);
+}
+
+int delete_case1(TREE *tree, LEAF *leaf) {
+    if (leaf->parent != NULL) {
+        return delete_case2(tree, leaf);
+    } else {
+        printf("Here1\n");
+        tree->root = leaf;
+        return 0;
+    }
+}
+
+/* ########################################################################## */
+
+/* delete leaf m and replace it with its child c, while maintaining tree properties */
+int delete_repair(TREE *tree, LEAF *leaf, LEAF *child) {
+    int child_null = (child == NULL) ? 1 : 0;
+    /* if child is null, make child a duplicate of leaf */
+    if (child_null) {
+        child = new_leaf(leaf->key, leaf->value, BLACK);
+    }
+    LEAF *p = leaf->parent;
+    /* replace m with c */
+    child->parent = p;
+    if (p != NULL) {
+        if (p->left == leaf) {
+            p->left = child;
+        } else {
+            p->right = child;
+        }
+    } else {
+        tree->root = child;
+    }
+    if (get_colour(leaf) == BLACK) {
+        if (get_colour(child) == RED) {
+            set_colour(child, BLACK);
+        } else {
+            /* if both leaf and child are black, start the rigmarole we wrote upstairs */
+            delete_case1(tree, child);
+        }
+        free(leaf);
+    }
+    if (child_null) {
+        if (child->parent != NULL) {
+            if (child->parent->left == child) {
+                child->parent->left = NULL;
+            } else {
+                child->parent->right = NULL;
+            }
+        } else {
+            tree->root = NULL;
+        }
+        free(child);
+    }
 
     return 0;
 }
 
 
 /* recursive method to delete leaf from tree */
-LEAF* delete_leaf_rec(TREE *tree, LEAF *leaf) {
+int delete_leaf_rec(TREE *tree, LEAF *leaf) {
     if (leaf->left != NULL && leaf->right != NULL) {
         /* leaf has two children, so delete further down the tree */
         LEAF *right_min = get_min(leaf->right);
@@ -517,22 +547,24 @@ LEAF* delete_leaf_rec(TREE *tree, LEAF *leaf) {
         } else {
             delete_repair(tree, leaf, leaf->left);
         }
-        return leaf;
+        return 0;
     }
 }
 
-/* deletes and returns node with given key if it exists */
-LEAF* delete(TREE *tree, int k) {
+/* deletes and returns value of leaf with given key if it exists */
+char delete(TREE *tree, int k) {
+    char ret_val = CHAR_NULL;
     if (tree == NULL) {
         printf("Passed a NULL tree: TREE.DELETE\n");
-        return NULL;
+        return ret_val;
     }
     LEAF *leaf = search(k, tree->root);
     if (leaf != NULL) {
+        ret_val = leaf->value;
         delete_leaf_rec(tree, leaf);
         --(tree->size);
     }
-    return leaf;
+    return ret_val;
 }
 
 int main() {
