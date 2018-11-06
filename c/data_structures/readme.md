@@ -3,6 +3,7 @@ Some abstract data structures implemented in C. Currently contains:
 + Singly-linked list
 + Queue
 + Stack
++ (Red-black) binary tree
 
 To use these data types, change the code in `src/main.c` and compile using `make`:  
 ```
