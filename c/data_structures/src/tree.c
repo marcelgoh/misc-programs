@@ -6,34 +6,14 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "tree.h"
 
 #define ERR_VAL INT_MIN
 #define RED 'r'
 #define BLACK 'b'
 #define CHAR_NULL '\0'
 
-/* a single leaf on the tree (ALL NODES ARE CALLED LEAVES to prevent name clash) */
-typedef struct leaf_s LEAF;
-struct leaf_s {
-    int key;
-    /* for simplicity's sake, all values are just chars, but
-     * the data structure could be reimplemented with other data
-     */
-    char value;
-    /* RED or BLACK */
-    char colour;
-    LEAF* parent;
-    LEAF* left;
-    LEAF* right;
-};
-
-/* a tree is a pointer to the root leaf */
-typedef struct tree_s {
-    LEAF* root;
-    int size;
-} TREE;
-
-/* construct a new coloured leaf containing integer */
+/* construct a new coloured leaf containing key value pair */
 LEAF* new_leaf(int k, char v, char clr) {
     if (clr != RED && clr != BLACK) {
         printf("Colour must be red or black: TREE.NEW_LEAF\n");
@@ -243,7 +223,7 @@ int rotate_right(TREE* tree, LEAF *leaf) {
 }
 
 /* helper function to sink the leaf to the right spot in BST */
-int sink(LEAF* leaf, LEAF* curr_node) {
+int sink(LEAF *leaf, LEAF *curr_node) {
     if (leaf == NULL || curr_node == NULL) {
         printf("One of the arguments is NULL: TREE.SINK\n");
         return ERR_VAL;
@@ -397,7 +377,7 @@ char get_colour(LEAF *leaf) {
     return BLACK;
 }
 
-/* sets colour of leaf if its not NULL, else it does nothing */
+/* sets colour of leaf if not NULL, else it does nothing */
 int set_colour(LEAF *leaf, char clr) {
     if (leaf != NULL) {
         leaf->colour = clr;
@@ -405,8 +385,6 @@ int set_colour(LEAF *leaf, char clr) {
     }
     return 1;
 }
-
-int delete_case1(TREE *tree, LEAF *leaf);
 
 int delete_case6(TREE *tree, LEAF *leaf) {
     printf("Here6\n");
@@ -495,7 +473,7 @@ int delete_case1(TREE *tree, LEAF *leaf) {
 
 /* ########################################################################## */
 
-/* delete leaf m and replace it with its child c, while maintaining tree properties */
+/* delete leaf and replace it with its child, while maintaining tree properties */
 int delete_repair(TREE *tree, LEAF *leaf, LEAF *child) {
     int child_null = (child == NULL) ? 1 : 0;
     /* if child is null, make child a duplicate of leaf */
@@ -579,56 +557,4 @@ char delete(TREE *tree, int k) {
         --(tree->size);
     }
     return ret_val;
-}
-
-int main() {
-    TREE *tree = new_tree();
-
-    insert(tree,8,'h');
-    insert(tree,3,'c');
-    insert(tree,12,'l');
-    insert(tree,6,'f');
-    insert(tree,9,'i');
-    insert(tree,5,'e');
-    insert(tree,13,'m');
-    insert(tree,1,'a');
-    insert(tree,7,'g');
-    insert(tree,2,'b');
-    insert(tree,4,'d');
-    insert(tree,10,'j');
-    insert(tree,11,'k');
-
-    print_tree(tree);
-    printf("%d\n", tree->size);
-
-    delete(tree, 11);
-    print_tree(tree);
-    delete(tree, 9);
-    print_tree(tree);
-    delete(tree, 13);
-    print_tree(tree);
-    delete(tree, 4);
-    print_tree(tree);
-    delete(tree, 1);
-    print_tree(tree);
-    delete(tree, 2);
-    print_tree(tree);
-    delete(tree, 3);
-    print_tree(tree);
-    delete(tree, 6);
-    print_tree(tree);
-    delete(tree, 7);
-    print_tree(tree);
-    delete(tree, 8);
-    print_tree(tree);
-    delete(tree, 5);
-    print_tree(tree);
-    delete(tree, 10);
-    print_tree(tree);
-    delete(tree, 12);
-    print_tree(tree);
-
-    printf("%d\n", tree->size);
-
-    return 0;
 }

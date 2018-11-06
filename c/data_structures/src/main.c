@@ -7,9 +7,59 @@
 #include "linked.h"
 #include "queue.h"
 #include "stack.h"
+#include "tree.h"
 
 int main() {
-    /* LINKED LIST TESTS */
+    /* RED-BLACK TREE TESTS */
+    TREE *tree = new_tree();
+
+    insert(tree,8,'h');
+    insert(tree,3,'c');
+    insert(tree,12,'l');
+    insert(tree,6,'f');
+    insert(tree,9,'i');
+    insert(tree,5,'e');
+    insert(tree,13,'m');
+    insert(tree,1,'a');
+    insert(tree,7,'g');
+    insert(tree,2,'b');
+    insert(tree,4,'d');
+    insert(tree,10,'j');
+    insert(tree,11,'k');
+
+    print_tree(tree);
+    printf("%d\n", tree->size);
+
+    delete(tree, 11);
+    print_tree(tree);
+    delete(tree, 9);
+    print_tree(tree);
+    delete(tree, 13);
+    print_tree(tree);
+    delete(tree, 4);
+    print_tree(tree);
+    delete(tree, 1);
+    print_tree(tree);
+    delete(tree, 2);
+    print_tree(tree);
+    delete(tree, 3);
+    print_tree(tree);
+    delete(tree, 6);
+    print_tree(tree);
+    delete(tree, 7);
+    print_tree(tree);
+    delete(tree, 8);
+    print_tree(tree);
+    delete(tree, 5);
+    print_tree(tree);
+    delete(tree, 10);
+    print_tree(tree);
+    delete(tree, 12);
+    print_tree(tree);
+
+    printf("%d\n", tree->size);
+
+    /* LINKED LIST TESTS
     LL *list = new_ll();
     print_ll(list);
     reverse_ll(list);
@@ -28,6 +78,7 @@ int main() {
     print_ll(list);
     remove_val_at(list, 4);
     free_ll(&list);
+    */
 
     /* STACK TESTS
     STACK *stack = new_stack();
