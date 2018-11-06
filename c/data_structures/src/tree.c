@@ -387,7 +387,6 @@ int set_colour(LEAF *leaf, char clr) {
 }
 
 int delete_case6(TREE *tree, LEAF *leaf) {
-    printf("Here6\n");
     LEAF *s = sibling(leaf);
     set_colour(s, get_colour(leaf->parent));
     set_colour(leaf->parent, BLACK);
@@ -408,7 +407,6 @@ int delete_case6(TREE *tree, LEAF *leaf) {
 int delete_case5(TREE *tree, LEAF *leaf) {
     LEAF *s = sibling(leaf);
     if (s != NULL && get_colour(s) == BLACK) {
-        printf("Here5\n");
         if ((leaf == leaf->parent->left) &&
             (get_colour(s->right) == BLACK) &&
             (get_colour(s->left) == RED)) {
@@ -432,11 +430,9 @@ int delete_cases34(TREE *tree, LEAF *leaf) {
         (get_colour(s->left) == BLACK) &&
         (get_colour(s->right) == BLACK)) {
         if (get_colour(leaf->parent) == BLACK) {
-            printf("Here3\n");
             set_colour(s, RED);
             return delete_case1(tree, leaf->parent);
         } else {
-            printf("Here4\n");
             set_colour(s, RED);
             set_colour(leaf->parent, BLACK);
             return 0;
@@ -449,7 +445,6 @@ int delete_cases34(TREE *tree, LEAF *leaf) {
 int delete_case2(TREE *tree, LEAF *leaf) {
     LEAF *s = sibling(leaf);
     if (get_colour(s) == RED) {
-        printf("Here2\n");
         set_colour(leaf->parent, RED);
         set_colour(s, BLACK);
         if (leaf == leaf->parent->left) {
@@ -465,7 +460,6 @@ int delete_case1(TREE *tree, LEAF *leaf) {
     if (leaf->parent != NULL) {
         return delete_case2(tree, leaf);
     } else {
-        printf("Here1\n");
         tree->root = leaf;
         return 0;
     }
@@ -504,10 +498,6 @@ int delete_repair(TREE *tree, LEAF *leaf, LEAF *child) {
         free(leaf);
     }
     if (child_null) {
-        if (child->left != NULL || child->right != NULL) {
-            /* this shouldn't happen, will remove once I'm happy it doesn't */
-            printf("Wut???\n");
-        }
         if (child->parent != NULL) {
             if (child->parent->left == child) {
                 child->parent->left = NULL;

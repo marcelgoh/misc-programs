@@ -28,36 +28,9 @@ int main() {
     insert(tree,11,'k');
 
     print_tree(tree);
-    printf("%d\n", tree->size);
 
-    delete(tree, 11);
-    print_tree(tree);
-    delete(tree, 9);
-    print_tree(tree);
-    delete(tree, 13);
-    print_tree(tree);
-    delete(tree, 4);
-    print_tree(tree);
-    delete(tree, 1);
-    print_tree(tree);
-    delete(tree, 2);
-    print_tree(tree);
-    delete(tree, 3);
-    print_tree(tree);
-    delete(tree, 6);
-    print_tree(tree);
-    delete(tree, 7);
-    print_tree(tree);
-    delete(tree, 8);
-    print_tree(tree);
-    delete(tree, 5);
-    print_tree(tree);
-    delete(tree, 10);
-    print_tree(tree);
-    delete(tree, 12);
-    print_tree(tree);
-
-    printf("%d\n", tree->size);
+    printf("%c\n", delete(tree, 13));
+    printf("%c\n", delete(tree, 21));
 
     /* LINKED LIST TESTS
     LL *list = new_ll();
