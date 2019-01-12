@@ -7,17 +7,10 @@ import Data.List
 import Data.List.Split
 import Network.Curl.Download
 import Text.Read
-import Text.Printf
 
 import qualified Data.ByteString.Char8 as C
 
--- A point on the globe is defined as a latitude, longitude, and temperature.
-data Point = Point Double Double Double
--- For sorting purposes we only care about the temperature
-instance Eq Point where
-    (Point lat1 long1 temp1) == (Point lat2 long2 temp2) = temp1 == temp2
-instance Ord Point where
-    (Point lat1 long1 temp1) `compare` (Point lat2 long2 temp2) = temp1 `compare` temp2
+import Point
 
 -- removes the first n lines from string
 removeLines :: String -> Int -> String
@@ -29,7 +22,7 @@ removeLines str n =
                          then removeLines cs (n - 1)
                          else removeLines cs n
 
--- creates list of points from list of rows
+-- creates list of points, sorted by temp, from list of rows
 getPoints :: [String] -> [Point]
 getPoints strList =
     let getMaybe :: String -> Maybe Point
@@ -49,13 +42,7 @@ getPoints strList =
               s:ss -> case getMaybe s of
                         Just p  -> iterate ss (p:acc)
                         _       -> iterate ss acc
-    in iterate strList []
-
--- print a point to standard out
-printPoint :: Point -> IO ()
-printPoint p =
-    case p of
-      (Point d1 d2 d3) -> do printf "(%.4f, %.4f, %.4f)\n" d1 d2 d3
+    in sort (iterate strList [])
 
 -- handle different user inputs
 handle :: String -> IO ()
@@ -71,7 +58,7 @@ handle input =
                           main
                   2 -> do putStrLn "Analysing data on file..."
                           doc <- readFile "./Current/data.csv"
-                          let points = sort (getPoints (lines (removeLines doc 6)))
+                          let points = getPoints (lines (removeLines doc 6))
                           mapM_ printPoint points
                           main
                   3 -> do putStrLn "Closing program..."
