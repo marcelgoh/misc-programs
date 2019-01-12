@@ -30,8 +30,8 @@ getPoints strList =
             let fields = splitOn "," str
             in case fields of
                  (_:_:_:s1:s2:s3:rest) -> if s1 /= "" && s2 /= "" && s3 /= ""
-                                        then Just (Point (read s1 :: Double)
-                                                         (read s2 :: Double)
+                                        then Just (Point (Coord (read s1 :: Double)
+                                                                (read s2 :: Double))
                                                          (read s3 :: Double))
                                         else Nothing
                  _                -> Nothing
