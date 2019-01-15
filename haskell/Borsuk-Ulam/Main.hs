@@ -45,6 +45,12 @@ getPoints strList =
                         _       -> iterate ss acc
     in sort (iterate strList [])
 
+-- get date/timestamp from a single row of CSV
+getDateTime :: String -> (String, String)
+getDateTime str = case splitOn "," str of
+                    (_:_:date:rest) -> let list = splitOneOf ['T','Z'] date
+                                       in (head list, head (tail list))
+
 -- restructures list to group coordinates with same temperature
 -- assumes point list is already sorted by temperature
 byTemp :: [Point] -> [([Coord], Double)]
@@ -73,20 +79,41 @@ toAntipode tuples =
         convert (cs, d) = (antipodeList cs, d)
     in map convert (trimSingles tuples [])
 
+-- filter out the minimum antipode in the list
 minAntipode :: [([Antipode], Double)] -> [(Antipode, Double)]
 minAntipode tuples =
-    map (\(as, d) -> (minimum as, d)) tuples
+    map (\ (as, d) -> (minimum as, d)) tuples
 
+-- filter out the temperature with the least error
 leastError :: [(Antipode, Double)] -> (Antipode, Double)
 leastError [] = error "Cannot call on empty list: LEAST_ERROR"
 leastError tuples =
     foldr (\ (a1, d1) (a2, d2) -> if a1 < a2 then (a1, d1) else (a2, d2)) (head tuples) tuples
 
-printByTemp :: (Antipode, Double) -> IO ()
-printByTemp (a, t) =
-    do printf "{%.1f deg. C:\n" t
-       printAntipode a
-       putStrLn "}"
+-- print an antipode to standard out
+printAntipode :: Antipode -> IO ()
+printAntipode (Antipode c1 c2 err) =
+    let perc = 100 * err / (0.5*pi*6371)
+        sLat lat = if lat < 0 then (show (-lat)) ++ " S" else (show lat) ++ " N"
+        sLong long = if long < 0 then (show (-long)) ++ " W" else (show long) ++ " E"
+        sCoord (Coord lat long) = (sLat lat) ++ " " ++ (sLong long)
+    in do printf "%s and %s are antipodal with %.4f%% error\n" (sCoord c1) (sCoord c2) perc
+
+-- print the answer message
+printAnswer :: (Antipode, Double) -> (String, String) -> IO ()
+printAnswer (antipode, temp) (date, time) =
+    do printf "At %s GMT on %s,\n" time date
+       printAntipode antipode
+       printf "and both have temperature %.1f degrees Celsius\n" temp
+
+-- analyse a string containing CSV data
+analyse :: String -> IO ()
+analyse doc =
+    do let locations = lines (removeLines doc 6)
+           dateTime = getDateTime (head locations)
+           ants = toAntipode $ byTemp $ getPoints $ locations
+           pair = leastError $ minAntipode ants
+       printAnswer pair dateTime
 
 -- handle different user inputs
 handle :: String -> IO ()
@@ -102,14 +129,12 @@ handle input =
                           main
                   2 -> do putStrLn "Analysing data on file..."
                           doc <- readFile "./Current/data.csv"
-                          let ants = toAntipode $ byTemp $ getPoints $ lines (removeLines doc 6)
-                          printByTemp $ leastError $ minAntipode ants
+                          analyse doc
                           main
                   3 -> do putStrLn "Enter the relative path of a file"
                           filename <- getLine
                           doc <- readFile filename
-                          let ants = toAntipode $ byTemp $ getPoints $ lines (removeLines doc 6)
-                          printByTemp $ leastError $ minAntipode ants
+                          analyse doc
                           main
                   4 -> do putStrLn "Closing program..."
                   _ -> do putStrLn "Not a valid option."
@@ -120,7 +145,7 @@ handle input =
 -- main loop
 main :: IO ()
 main = do putStrLn "****************************************"
-          putStrLn "Choose an option by entering a number "
+          putStrLn "Choose an option by entering a number:"
           putStrLn "1) Update to current weather data"
           putStrLn "2) Find antipodes in current weather data"
           putStrLn "3) Import data from file"

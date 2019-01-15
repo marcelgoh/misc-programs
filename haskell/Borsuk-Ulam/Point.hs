@@ -51,8 +51,13 @@ haversine (Coord lat1 long1) (Coord lat2 long2) =
         c = 2 * (atan2 (sqrt a) (sqrt (1 - a)))
     in 6371 * c
 
+-- constructs an antipode from two coordinates
 makeAntipode :: Coord -> Coord -> Antipode
 makeAntipode c1 c2 = (Antipode c1 c2 (haversine (opposite c1) c2))
+
+-- get the error from an antipode
+getErr :: Antipode -> Double
+getErr (Antipode _ _ err) = err
 
 -- constructs a list of antipodes (with their error) from a list of coordinates
 antipodeList :: [Coord] -> [Antipode]
@@ -67,7 +72,3 @@ antipodeList coordinates =
               c:cs -> iterate cs (buildAcc c cs acc)
     in iterate coordinates []
 
--- print an antipode to standard out
-printAntipode :: Antipode -> IO ()
-printAntipode (Antipode (Coord lat1 long1) (Coord lat2 long2) err) =
-    do printf "(%.2f, %.2f) <=> (%.2f, %.2f), %.2f\n" lat1 long1 lat2 long2 err
