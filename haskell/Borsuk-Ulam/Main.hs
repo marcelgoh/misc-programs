@@ -93,7 +93,7 @@ leastError tuples =
 -- print an antipode to standard out
 printAntipode :: Antipode -> IO ()
 printAntipode (Antipode c1 c2 err) =
-    let perc = 100 * err / (0.5*pi*6371)
+    let perc = 100 * err / (pi*6371)
         sLat lat = if lat < 0 then (show (-lat)) ++ " S" else (show lat) ++ " N"
         sLong long = if long < 0 then (show (-long)) ++ " W" else (show long) ++ " E"
         sCoord (Coord lat long) = (sLat lat) ++ " " ++ (sLong long)
@@ -104,7 +104,7 @@ printAnswer :: (Antipode, Double) -> (String, String) -> IO ()
 printAnswer (antipode, temp) (date, time) =
     do printf "At %s GMT on %s,\n" time date
        printAntipode antipode
-       printf "and both have temperature %.1f degrees Celsius\n" temp
+       printf "and both have temperature %.1f degrees Celsius.\n" temp
 
 -- analyse a string containing CSV data
 analyse :: String -> IO ()
@@ -131,15 +131,16 @@ handle input =
                           doc <- readFile "./Current/data.csv"
                           analyse doc
                           main
-                  3 -> do putStrLn "Enter the relative path of a file"
+                  3 -> do putStrLn "Enter the relative path of a file:"
                           filename <- getLine
+                          putStrLn "Analysing data on file..."
                           doc <- readFile filename
                           analyse doc
                           main
                   4 -> do putStrLn "Closing program..."
                   _ -> do putStrLn "Not a valid option."
                           main
-      Nothing -> do putStrLn "Not a valid option"
+      Nothing -> do putStrLn "Not a valid option."
                     main
 
 -- main loop

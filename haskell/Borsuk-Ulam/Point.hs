@@ -1,7 +1,5 @@
 module Point where
 
-import Text.Printf
-
 -- A coordinate on the globe is a latitude and longitude
 data Coord = Coord Double Double
 
@@ -29,10 +27,6 @@ coordFromPoint (Point c _) = c
 -- get a point's temperature
 tempFromPoint :: Point -> Double
 tempFromPoint (Point _ t) = t
-
--- print a point to standard out
-printPoint :: Point -> IO ()
-printPoint (Point (Coord lat long) temp) = do printf "(%.2f, %.2f, %.2f)\n" lat long temp
 
 -- get coordinates of opposite side of the world
 opposite :: Coord -> Coord
@@ -71,4 +65,3 @@ antipodeList coordinates =
               []   -> acc
               c:cs -> iterate cs (buildAcc c cs acc)
     in iterate coordinates []
-
