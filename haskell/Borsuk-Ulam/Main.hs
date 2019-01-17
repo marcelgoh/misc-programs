@@ -45,6 +45,11 @@ getPoints strList =
                         _       -> iterate ss acc
     in sort (iterate strList [])
 
+-- get points with (minimum, maximum) maximum temperatures, given sorted list
+getExtremes :: [Point] -> (Point, Point)
+getExtremes points = (head points, last points)
+
+
 -- get date/timestamp from a single row of CSV
 getDateTime :: String -> (String, String)
 getDateTime str = case splitOn "," str of
@@ -90,14 +95,18 @@ leastError [] = error "Cannot call on empty list: LEAST_ERROR"
 leastError tuples =
     foldr (\ (a1, d1) (a2, d2) -> if a1 < a2 then (a1, d1) else (a2, d2)) (head tuples) tuples
 
+-- convert a coordinate to string
+toStrCoord :: Coord -> String
+toStrCoord (Coord lat long) =
+    let sLat lat = if lat < 0 then (show (-lat)) ++ " S" else (show lat) ++ " N"
+        sLong long = if long < 0 then (show (-long)) ++ " W" else (show long) ++ " E"
+    in (sLat lat) ++ " " ++ (sLong long)
+
 -- print an antipode to standard out
 printAntipode :: Antipode -> IO ()
 printAntipode (Antipode c1 c2 err) =
     let perc = 100 * err / (pi*6371)
-        sLat lat = if lat < 0 then (show (-lat)) ++ " S" else (show lat) ++ " N"
-        sLong long = if long < 0 then (show (-long)) ++ " W" else (show long) ++ " E"
-        sCoord (Coord lat long) = (sLat lat) ++ " " ++ (sLong long)
-    in do printf "%s and %s are antipodal with %.4f%% error\n" (sCoord c1) (sCoord c2) perc
+    in do printf "%s and %s are antipodal with %.4f%% error\n" (toStrCoord c1) (toStrCoord c2) perc
 
 -- print the answer message
 printAnswer :: (Antipode, Double) -> (String, String) -> IO ()
@@ -117,7 +126,7 @@ analyse doc =
 
 -- handle different user inputs
 handle :: String -> IO ()
-handle input =
+handle input = do
     case readMaybe input :: Maybe Int of
       Just n -> case n of
                   1 -> do putStrLn "Trying to find data from web..."
@@ -137,11 +146,21 @@ handle input =
                           doc <- readFile filename
                           analyse doc
                           main
-                  4 -> do putStrLn "Closing program..."
-                  _ -> do putStrLn "Not a valid option."
+                  4 -> do putStrLn "Analysing data on file..."
+                          doc <- readFile "./Current/data.csv"
+                          let locations = lines (removeLines doc 6)
+                              dateTime = getDateTime (head locations)
+                              extremes = getExtremes $ getPoints $ locations
+                          case dateTime of
+                            (date, time) -> printf "At %s GMT on %s,\n" time date
+                          case extremes of
+                            ((Point c1 t1), (Point c2 t2))
+                              -> do printf "The coldest point is %s at %.1f degrees Celsius\n" (toStrCoord c1) t1
+                                    printf "The warmest point is %s at %.1f degrees Celsius\n" (toStrCoord c2) t2
                           main
+                  5 -> do putStrLn "Closing program..."
+                  _ -> do putStrLn "Not a valid option."
       Nothing -> do putStrLn "Not a valid option."
-                    main
 
 -- main loop
 main :: IO ()
@@ -150,6 +169,7 @@ main = do putStrLn "****************************************"
           putStrLn "1) Update to current weather data"
           putStrLn "2) Find antipodes in current weather data"
           putStrLn "3) Import data from file"
-          putStrLn "4) Exit the program"
+          putStrLn "4) Find current extreme temperatures"
+          putStrLn "5) Exit the program"
           input <- getLine
           handle input
