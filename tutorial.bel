@@ -1,0 +1,54 @@
+% natural numbers
+nat : type.
+z : nat.
+succ : nat -> nat.
+
+% booleans
+bool : type.
+true : bool.
+false : bool.
+
+% lists
+lst : nat -> type.
+nil : lst z.
+cons : bool -> lst N -> lst (succ N).
+
+% and function for two booleans
+rec andalso : [|- bool] -> [|- bool] -> [|- bool] =
+  fn x => fn y =>
+    case x of
+      | [|- false] => [|- false]
+      | [|- true] => y
+;
+
+% add two natural numbers
+rec add : [|- nat] -> [|- nat] -> [|- nat] =
+  fn x => fn y =>
+    case x of
+      | [|- z] => y
+      | [|- succ N] => let [|- R] = add [|- N] y
+                       in [|- succ R]
+;
+
+% get the length of a list
+rec length : [|- list] -> [|- nat] =
+  fn l =>
+    case l of
+      | [|- nil] => [|- z]
+      | [|- cons H T] => let [|- N] = length ([|- T])
+                         in [|- succ N]
+;
+
+% map a function onto every element in a list
+rec map : ([ |- nat] -> [|- nat]) -> [|- list] -> [|- list] =
+  fn f => fn l =>
+    case l of
+      | [|- nil] => [|- nil]
+      | [|- cons H T] => let [|- R] = f [|- H]
+                         in let [|- T'] = map f [|- T]
+                            in [|- cons R T']
+;
+
+% some lists
+let l1 = [|- cons true nil];
+let l2 = [|- cons true (cons false nil)];
