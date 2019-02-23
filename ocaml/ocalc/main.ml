@@ -1,7 +1,7 @@
 (* Command-line interface of the program *)
 
 open Printf
-open Parse
+open Lexer
 
 (* exit the program *)
 let quit () =
@@ -16,7 +16,8 @@ let rec loop () =
     ":q"    -> quit ()
   | ":help" -> printf "I don't do much at the moment.\n";
                loop ()
-  | _       -> printf "%s\n" (parse input);
+  | _       -> let output = try lex input with Failure -> "Invalid input." in
+               printf "%s\n" output;
                loop ()
 
 (* print startup blurb and start loop *)
