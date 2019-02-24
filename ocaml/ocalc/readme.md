@@ -16,16 +16,16 @@ This little example shows all the operators supported by OCalc. (Comments after 
 ]=> (3.3 + 4) * 17 ^ 6 - (-18.6) / 4
 LOAD_F 0x40533333    # push (single-precision) float onto stack
 LOAD_I 0x00000004    # push int onto stack
-INSTRN 0x0001        # pop two values from stack, add them, and push back to stack
+INSTRN 0x01        # pop two values from stack, add them, and push back to stack
 LOAD_I 0x00000011
 LOAD_I 0x00000006
-INSTRN 0x0005        # exponent
-INSTRN 0x0003        # multiplication
+INSTRN 0x05        # exponent
+INSTRN 0x03        # multiplication
 LOAD_F 0x4194cccd
-INSTRN 0x0006        # unary negation
+INSTRN 0x06        # unary negation
 LOAD_I 0x00000004
-INSTRN 0x0004        # division
-INSTRN 0x0002        # subtraction
+INSTRN 0x04        # division
+INSTRN 0x02        # subtraction
 ```
 
 ## Authors

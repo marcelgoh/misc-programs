@@ -45,4 +45,4 @@ let str_from_instr instr=
   match instr with
     (LOAD_I i) -> Printf.sprintf "LOAD_I %#010lx" i
   | (LOAD_F f) -> Printf.sprintf "LOAD_F %#010lx" f
-  | (INSTRN c) -> Printf.sprintf "INSTRN %#06x" (int_of_char c)
+  | (INSTRN c) -> Printf.sprintf "INSTRN %#04x" (int_of_char c)
