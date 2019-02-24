@@ -16,7 +16,7 @@ let rec loop () =
     ":q"    -> quit ()
   | ":help" -> printf "I don't do much at the moment.\n";
                loop ()
-  | _       -> let output = try lex input with Failure -> "Invalid input." in
+  | _       -> let output = try lex input with Lex_fail -> "Invalid input." in
                printf "%s\n" output;
                loop ()
 
@@ -24,7 +24,7 @@ let rec loop () =
 let main () =
   printf "+----------------------------------------------+\n";
   printf "| OCalc Interactive Calculator                 |\n";
-  printf "| Author: Marcel Goh (Release: 22 Feb '19)     |\n";
+  printf "| Author: Marcel Goh (Release: 24 Feb '19)     |\n";
   printf "| Type \":help\" for help or \":q\" to quit.       |\n";
   printf "+----------------------------------------------+\n";
   loop ()

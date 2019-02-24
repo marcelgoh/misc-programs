@@ -1,14 +1,9 @@
 (* Header file for Lexer *)
 
 open List
+open Types
 
-type token =
-  | NUMBER of string
-  | OP of string
-  | LPAREN of string
-  | RPAREN of string
-
-exception Failure
+exception Lex_fail
 
 (* converts string to list of chars *)
 val chars_from_str : string -> char list
@@ -27,9 +22,6 @@ val generate_tokens : string -> token list
 
 (* returns true if the string has whitespace between numbers *)
 val whitespace_between_nums : string -> bool
-
-(* printable representation of a token *)
-val str_from_token : token -> string
 
 (* tokenise and concatenate all tokens into string *)
 val print_all_tokens : string -> string

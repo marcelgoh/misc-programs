@@ -1,14 +1,10 @@
 (* Functions to tokenise user input *)
 
 open List
+open Types
+open Parser
 
-type token =
-  | NUMBER of string
-  | OP of string
-  | LPAREN of string
-  | RPAREN of string
-
-exception Failure
+exception Lex_fail
 
 (* converts string to list of chars *)
 let chars_from_str str =
@@ -45,7 +41,7 @@ let take_number chars =
                       (rev acc, left) in
   let ret_list = iter [] chars false in
   if length (fst ret_list) == 1 && hd (fst ret_list) == '.' then
-    raise Failure
+    raise Lex_fail
   else ret_list
 
 (* generate tokens from charlist *)
@@ -56,12 +52,13 @@ let generate_tokens str =
       []      -> rev tokens
     | '('::cs -> iter ((LPAREN "(")::tokens) cs
     | ')'::cs -> iter ((RPAREN ")")::tokens) cs
-    | '-'::cs -> (match (hd tokens) with
+    | '-'::cs -> if List.length tokens == 0 then iter ((OP "NEG")::tokens) cs else
+                 (match (hd tokens) with
                     (LPAREN _)
                   | (OP _) -> iter ((OP "NEG")::tokens) cs
                   | _      -> iter ((OP "-")::tokens) cs)
     | '.'::cs -> (match (hd tokens) with
-                    (NUMBER _) -> raise Failure
+                    (NUMBER _) -> raise Lex_fail
                   | _          -> let pair = take_number left in
                                   let s = (str_from_chars (fst pair)) in
                                   iter ((NUMBER s)::tokens) (snd pair))
@@ -73,7 +70,7 @@ let generate_tokens str =
                         let pair = take_number left in
                         let s = (str_from_chars (fst pair)) in
                         iter ((NUMBER s)::tokens) (snd pair)
-                 else raise Failure in
+                 else raise Lex_fail in
   iter [] chars
 
 (* returns true if the string has whitespace between numbers *)
@@ -83,21 +80,12 @@ let whitespace_between_nums str =
         true
   with Not_found -> false
 
-(* printable representation of a token *)
-let str_from_token tok =
-  let pair =
-    match tok with
-      (LPAREN s) -> ("LPAREN", s)
-    | (RPAREN s) -> ("RPAREN", s)
-    | (NUMBER s) -> ("NUMBER", s)
-    | (OP s)     -> ("OP", s) in
-  Printf.sprintf "%s %s" (fst pair) (snd pair)
-
 (* tokenise and concatenate all tokens into string *)
 let print_all_tokens str =
-  String.concat "\n" (map str_from_token (generate_tokens str))
+  String.concat "\n" (map (fun tok -> str_from_instr (instr_from_token tok))
+                          (shunt (generate_tokens str)))
 
 (* tokenise user input *)
 let lex str = if whitespace_between_nums str then
-                raise Failure
+                raise Lex_fail
               else print_all_tokens str
