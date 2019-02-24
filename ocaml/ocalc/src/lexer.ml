@@ -1,4 +1,4 @@
-(* Functions to parse input *)
+(* Functions to tokenise user input *)
 
 open List
 
@@ -76,6 +76,13 @@ let generate_tokens str =
                  else raise Failure in
   iter [] chars
 
+(* returns true if the string has whitespace between numbers *)
+let whitespace_between_nums str =
+  let regex = Str.regexp "[0-9.][ \r\t\n\x0c]+[0-9.]" in
+  try let _ = Str.search_forward regex str 0 in
+        true
+  with Not_found -> false
+
 (* printable representation of a token *)
 let str_from_token tok =
   let pair =
@@ -86,16 +93,11 @@ let str_from_token tok =
     | (OP s)     -> ("OP", s) in
   Printf.sprintf "%s %s" (fst pair) (snd pair)
 
-(* returns true if the string has whitespace between numbers *)
-let whitespace_between_nums str =
-  let regex = Str.regexp "[0-9.][ \r\t\n\x0c]+[0-9.]" in
-  try let _ = Str.search_forward regex str 0 in
-        true
-  with Not_found -> false
-
+(* tokenise and concatenate all tokens into string *)
 let print_all_tokens str =
   String.concat "\n" (map str_from_token (generate_tokens str))
 
+(* tokenise user input *)
 let lex str = if whitespace_between_nums str then
                 raise Failure
               else print_all_tokens str

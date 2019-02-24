@@ -1,0 +1,2 @@
+<**/*.{byte,native}> : package(str)
+"src" : include

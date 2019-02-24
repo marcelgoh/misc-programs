@@ -4,8 +4,9 @@
 !*.*
 # Unignore all directories
 !*/
-# Unignore Makefile
+# Unignore Makefile and OCaml _tags file
 !Makefile
+!_tags
 ### ALL FILES WITHOUT EXTENSION NOW IGNORED ###
 
 # OS generated files #
