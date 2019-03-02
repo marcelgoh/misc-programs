@@ -1,7 +1,5 @@
 (* Representations of tokens and instructions *)
 
-open Int32
-
 type token =
   | NUMBER of string
   | OP of string
@@ -9,9 +7,9 @@ type token =
   | RPAREN of string
 
 type instr =
-  | LOAD_I of int32
-  | LOAD_F of int32
-  | INSTRN of char
+  | LOAD_I of int
+  | LOAD_F of float
+  | ADD | SUB | MUL | DIV | NEG | EXP | NOP
 
 (* printable representation of a token *)
 let str_from_token tok =
@@ -27,22 +25,27 @@ let str_from_token tok =
 let instr_from_token tok =
   match tok with
     (NUMBER s) -> if String.contains s '.' then
-                    (LOAD_F (bits_of_float (float_of_string s)))
-                  else (LOAD_I (of_int (int_of_string s)))
-  (* TODO: implement using symbol table? *)
+                    (LOAD_F (float_of_string s))
+                  else (LOAD_I (int_of_string s))
   | (OP s)     -> (match s with
-                     "+"   -> (INSTRN '\001')
-                   | "-"   -> (INSTRN '\002')
-                   | "*"   -> (INSTRN '\003')
-                   | "/"   -> (INSTRN '\004')
-                   | "^"   -> (INSTRN '\005')
-                   | "NEG" -> (INSTRN '\006')
-                   | _     -> (INSTRN '\000')) (* NOP *)
-  | _          -> (INSTRN '\000')
+                     "+"   -> ADD
+                   | "-"   -> SUB
+                   | "*"   -> MUL
+                   | "/"   -> DIV
+                   | "^"   -> EXP
+                   | "NEG" -> NEG
+                   | _     -> NOP)
+  | _          -> NOP
 
 (* printable representation of an instruction *)
 let str_from_instr instr=
   match instr with
-    (LOAD_I i) -> Printf.sprintf "LOAD_I %#010lx" i
-  | (LOAD_F f) -> Printf.sprintf "LOAD_F %#010lx" f
-  | (INSTRN c) -> Printf.sprintf "INSTRN %#04x" (int_of_char c)
+    (LOAD_I i) -> Printf.sprintf "LOAD_I %d" i
+  | (LOAD_F f) -> Printf.sprintf "LOAD_F %f" f
+  | ADD -> Printf.sprintf "ADD"
+  | SUB -> Printf.sprintf "SUBTRACT"
+  | MUL -> Printf.sprintf "MULTIPLY"
+  | DIV -> Printf.sprintf "DIVIDE"
+  | NEG -> Printf.sprintf "NEGATE"
+  | EXP -> Printf.sprintf "EXPONENT"
+  | NOP -> Printf.sprintf "NO OPERATION"

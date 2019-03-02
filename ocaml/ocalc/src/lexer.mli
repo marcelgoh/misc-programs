@@ -23,8 +23,5 @@ val generate_tokens : string -> token list
 (* returns true if the string has whitespace between numbers *)
 val whitespace_between_nums : string -> bool
 
-(* tokenise and concatenate all tokens into string *)
-val print_all_tokens : string -> string
-
 (* tokenise user input *)
-val lex : string -> string
+val lex : string -> token list

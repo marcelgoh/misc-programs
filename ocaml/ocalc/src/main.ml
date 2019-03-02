@@ -1,7 +1,10 @@
 (* Command-line interface of the program *)
 
 open Printf
+
 open Lexer
+open Parser
+open Types
 
 (* exit the program *)
 let quit () =
@@ -16,8 +19,11 @@ let rec loop () =
     ":q"    -> quit ()
   | ":help" -> printf "I don't do much at the moment.\n";
                loop ()
-  | _       -> let output = try lex input with Lex_fail -> "Invalid input." in
-               printf "%s\n" output;
+  | _       -> let tokens = try lex input with Lex_fail -> printf "Invalid input."; [] in
+               let parsed = shunt tokens in
+               let asm_out = String.concat "\n"
+                               (List.map (fun x -> str_from_instr (instr_from_token x)) parsed) in
+               printf "%s\n" asm_out;
                loop ()
 
 (* print startup blurb and start loop *)

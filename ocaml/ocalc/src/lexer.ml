@@ -2,7 +2,6 @@
 
 open List
 open Types
-open Parser
 
 exception Lex_fail
 
@@ -80,12 +79,7 @@ let whitespace_between_nums str =
         true
   with Not_found -> false
 
-(* tokenise and concatenate all tokens into string *)
-let print_all_tokens str =
-  String.concat "\n" (map (fun tok -> str_from_instr (instr_from_token tok))
-                          (shunt (generate_tokens str)))
-
 (* tokenise user input *)
 let lex str = if whitespace_between_nums str then
                 raise Lex_fail
-              else print_all_tokens str
+              else generate_tokens str

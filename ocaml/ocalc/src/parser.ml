@@ -61,5 +61,3 @@ let shunt tok_list =
                 | (RPAREN _) -> let pair = handle_rparen out op in
                                 iter (fst pair) (snd pair) ts) in
   iter [] [] tok_list
-
-

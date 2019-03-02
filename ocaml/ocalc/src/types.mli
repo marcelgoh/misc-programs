@@ -1,7 +1,5 @@
 (* Header file for Types *)
 
-open Int32
-
 type token =
   | NUMBER of string
   | OP of string
@@ -9,9 +7,9 @@ type token =
   | RPAREN of string
 
 type instr =
-  | LOAD_I of int32
-  | LOAD_F of int32
-  | INSTRN of char
+  | LOAD_I of int
+  | LOAD_F of float
+  | ADD | SUB | MUL | DIV | NEG | EXP | NOP
 
 (* printable representation of a token *)
 val str_from_token : token -> string
