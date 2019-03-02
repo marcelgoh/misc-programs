@@ -40,8 +40,8 @@ let instr_from_token tok =
 (* printable representation of an instruction *)
 let str_from_instr instr=
   match instr with
-    (LOAD_I i) -> Printf.sprintf "LOAD_I %d" i
-  | (LOAD_F f) -> Printf.sprintf "LOAD_F %f" f
+    (LOAD_I i) -> Printf.sprintf "LOAD_INT\t%d" i
+  | (LOAD_F f) -> Printf.sprintf "LOAD_FLT\t%f" f
   | ADD -> Printf.sprintf "ADD"
   | SUB -> Printf.sprintf "SUBTRACT"
   | MUL -> Printf.sprintf "MULTIPLY"
