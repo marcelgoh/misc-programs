@@ -18,7 +18,7 @@ let rec loop () =
   let input = read_line () in
   match input with
     ":q"    -> quit ()
-  | ":help" -> printf "%s%s%s%s%s%s%s%s\n"
+  | ":help" -> printf "%s%s%s%s%s%s%s%s%s%s\n"
                       "Type a mathematical expression to have it evaluated!\n"
                       "Supported operators:\n"
                       "    (+) Addition\n"
@@ -26,7 +26,9 @@ let rec loop () =
                       "    (*) Multiplication\n"
                       "    (/) Division\n"
                       "    (^) Exponentiation\n"
-                      "Use brackets to force operator precedence.";
+                      "Use brackets to force operator precedence.\n"
+                      "Note: Complex numbers not supported. Be careful when\n"
+                      "taking negative numbers to fractional exponents.";
                loop ()
   | _       -> let tokens = try lex input with Lex_fail -> [] in
                let instrs = try List.map instr_from_token (shunt tokens)

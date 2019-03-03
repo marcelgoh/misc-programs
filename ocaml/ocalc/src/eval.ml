@@ -11,7 +11,6 @@ let intop_from_inst i =
   | SUB -> (-)
   | MUL -> ( * )
   | DIV -> (/)
-  | EXP -> (fun x y -> int_of_float (float_of_int x ** float_of_int y))
   | _   -> raise Eval_fail
 
 (* returns int operation corresponding with instruction *)
@@ -21,25 +20,40 @@ let fltop_from_inst i =
   | SUB -> (-.)
   | MUL -> ( *. )
   | DIV -> (/.)
-  | EXP -> ( ** )
   | _   -> raise Eval_fail
 
 (* evaluate a binary operation *)
+(* arguments are evaluated in reverse order because of the nature of the stack *)
 let bineval ins arg1 arg2 =
-  match arg1 with
-    LOAD_I i1 -> (match arg2 with
-                   LOAD_I i2 -> let op = intop_from_inst ins in
-                                LOAD_I (op i1 i2)
-                 | LOAD_F f2 -> let op = fltop_from_inst ins in
-                                LOAD_F (op (float_of_int i1) f2)
-                 | _         -> raise Eval_fail)
-  | LOAD_F f1 -> (match arg2 with
-                    LOAD_I i2 -> let op = fltop_from_inst ins in
-                                 LOAD_F (op f1 (float_of_int i2))
-                  | LOAD_F f2 -> let op = fltop_from_inst ins in
-                                 LOAD_F (op f1 f2)
-                  | _         -> raise Eval_fail)
-  | _         -> raise Eval_fail
+  match ins with
+    (* exponentiation always casts to float *)
+    EXP -> (match arg1 with
+              LOAD_I i1 -> let c1 = float_of_int i1 in
+                             (match arg2 with
+                                LOAD_I i2 -> let c2 = float_of_int i2 in
+                                           LOAD_F (c2 ** c1)
+                              | LOAD_F f2 -> LOAD_F (f2 ** c1)
+                              | _         -> raise Eval_fail)
+            | LOAD_F f1 -> (match arg2 with
+                              LOAD_I i2 -> let c2 = float_of_int i2 in
+                                           LOAD_F (c2 ** f1)
+                            | LOAD_F f2 -> LOAD_F (f2 ** f1)
+                            | _         -> raise Eval_fail)
+            | _         -> raise Eval_fail)
+  | _   -> (match arg1 with
+              LOAD_I i1 -> (match arg2 with
+                              LOAD_I i2 -> let op = intop_from_inst ins in
+                                           LOAD_I (op i2 i1)
+                            | LOAD_F f2 -> let op = fltop_from_inst ins in
+                                           LOAD_F (op f2 (float_of_int i1))
+                            | _         -> raise Eval_fail)
+            | LOAD_F f1 -> (match arg2 with
+                              LOAD_I i2 -> let op = fltop_from_inst ins in
+                                           LOAD_F (op (float_of_int i2) f1)
+                            | LOAD_F f2 -> let op = fltop_from_inst ins in
+                                           LOAD_F (op f2 f1)
+                            | _         -> raise Eval_fail)
+            | _         -> raise Eval_fail)
 
 (* reduce instruction stack to single instruction *)
 let follow instrs =
