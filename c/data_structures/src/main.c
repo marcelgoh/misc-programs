@@ -1,5 +1,5 @@
 /* Main procedure that uses data structures
- * Last updated on 17 October 2018
+ * Last updated on 25 April 2019
  */
 
 #include <stdio.h>
@@ -8,9 +8,31 @@
 #include "queue.h"
 #include "stack.h"
 #include "tree.h"
+#include "dynarray.h"
 
 int main() {
-    /* RED-BLACK TREE TESTS */
+    /* DYNARRAY TESTS */
+    DYNARRAY *arr = new_da(5);
+    add_da(arr, 7, 'l');
+    add_da(arr, 5, 'i');
+    add_da(arr, 4, 'b');
+    add_da(arr, 2, 'i');
+    add_da(arr, 3, 'p');
+    add_da(arr, 2, 'm');
+    print_da(arr);
+    printf("%d\n", size_da(arr));
+    ITEM* item = get_da(arr, 3);
+    printf("%d %c\n", item->key, item->value);
+    set_da(arr, 2, 10, 'a');
+    print_da(arr);
+    insert_da(arr, 5, 6, 'c');
+    print_da(arr);
+    remove_da(arr, 2);
+    print_da(arr);
+    free_da(&arr);
+    print_da(arr);
+
+    /* RED-BLACK TREE TESTS 
     TREE *tree = new_tree();
 
     insert(tree,8,'h');
@@ -31,6 +53,7 @@ int main() {
 
     printf("%c\n", delete(tree, 13));
     printf("%c\n", delete(tree, 21));
+    */
 
     /* LINKED LIST TESTS
     LL *list = new_ll();
@@ -51,6 +74,7 @@ int main() {
     print_ll(list);
     remove_val_at(list, 4);
     free_ll(&list);
+    print_ll(list);
     */
 
     /* STACK TESTS
