@@ -378,6 +378,10 @@ char get_colour(LEAF *leaf) {
 }
 
 /* sets colour of leaf if not NULL, else it does nothing */
+
+/* pre-declare case 1 */
+int delete_case1(TREE *tree, LEAF *leaf);
+
 int set_colour(LEAF *leaf, char clr) {
     if (leaf != NULL) {
         leaf->colour = clr;
