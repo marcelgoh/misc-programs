@@ -28,6 +28,8 @@ int main() {
     remove_min(h);
     add_heap(h, 7, 'g');
     print_heap(h);
+    free_heap(&h);
+    print_heap(h);
 
     /* DYNARRAY TESTS
     DYNARRAY *arr = new_da(5);

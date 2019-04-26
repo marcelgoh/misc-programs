@@ -112,6 +112,10 @@ ITEM* remove_min(HEAP *heap) {
 }
 
 int print_heap(const HEAP *heap) {
+    if (heap == NULL) {
+        printf("Passed a NULL heap: HEAP.PRINT_HEAP()\n");
+        return ERR_VAL;
+    }
     int current_level = 1;
     ITEM* item;
 
