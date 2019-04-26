@@ -1,5 +1,5 @@
 /* Resizing array data-structure interface
- * Last updated 25 April 2019 by Marcel Goh
+ * Last updated 26 April 2019 by Marcel Goh
  */
 
 #define ERR_VAL INT_MIN
@@ -9,6 +9,11 @@ typedef struct item_s {
     int key;
     char value;
 } ITEM;
+
+/* returns negative if item1 < item2, 0 if equal,
+ * positive if item1 > item2
+ */
+int compare_item(const ITEM *i1, const ITEM *i2);
 
 /* returns a new item */
 ITEM* new_item(int k, char v);
@@ -30,6 +35,9 @@ ITEM *get_da(const DYNARRAY *da, int idx);
 
 /* set item at index */
 int set_da(DYNARRAY *da, int idx, int key, char value);
+
+/* swaps items at indices i and j */
+int swap_da(DYNARRAY *da, int i, int j);
 
 /* insert item at index, shifting everything after it down */
 int insert_da(DYNARRAY *da, int idx, int key, char value);

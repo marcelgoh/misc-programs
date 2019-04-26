@@ -1,5 +1,5 @@
 /* Main procedure that uses data structures
- * Last updated on 25 April 2019
+ * Last updated on 26 April 2019
  */
 
 #include <stdio.h>
@@ -9,9 +9,27 @@
 #include "stack.h"
 #include "tree.h"
 #include "dynarray.h"
+#include "heap.h"
 
 int main() {
-    /* DYNARRAY TESTS */
+    /* HEAP TESTS */
+    HEAP *h = new_heap();
+    add_heap(h, 4, 'd');
+    add_heap(h, 6, 'f');
+    add_heap(h, 2, 'b');
+    print_heap(h);
+    add_heap(h, 8, 'h');
+    add_heap(h, 9, 'i');
+    add_heap(h, 3, 'c');
+    add_heap(h, 5, 'e');
+    add_heap(h, 1, 'a');
+    print_heap(h);
+    printf("\n");
+    remove_min(h);
+    add_heap(h, 7, 'g');
+    print_heap(h);
+
+    /* DYNARRAY TESTS
     DYNARRAY *arr = new_da(5);
     add_da(arr, 7, 'l');
     add_da(arr, 5, 'i');
@@ -29,8 +47,11 @@ int main() {
     print_da(arr);
     remove_da(arr, 2);
     print_da(arr);
+    swap_da(arr, 4, 2);
+    print_da(arr);
     free_da(&arr);
     print_da(arr);
+    */
 
     /* RED-BLACK TREE TESTS 
     TREE *tree = new_tree();

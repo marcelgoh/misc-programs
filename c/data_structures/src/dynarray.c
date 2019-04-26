@@ -1,5 +1,5 @@
 /* Resizing array data-structure
- * Last updated 25 April 2019 by Marcel Goh
+ * Last updated 26 April 2019 by Marcel Goh
  */
 
 #include <limits.h>
@@ -18,6 +18,17 @@ ITEM* new_item(int k, char v) {
     new->key = k;
     new->value = v;
     return new;
+}
+
+/* returns negative if item1 < item2, 0 if equal,
+ * positive if item1 > item2
+ */
+int compare_item(const ITEM *i1, const ITEM *i2) {
+    if (i1 == NULL || i2 == NULL) {
+        printf("Passed a NULL pointer: DYNARRAY.COMPARE_ITEM()");
+        return ERR_VAL;
+    }
+    return i1->key - i2->key;
 }
 
 /* resizing array of items */
@@ -102,7 +113,7 @@ ITEM *get_da(const DYNARRAY *da, int idx) {
         printf("Passed a null array: DYNARRAY.GET_DA()\n");
         return NULL;
     }
-    if (idx >= da->size) {
+    if (idx < 0 || idx >= da->size) {
         printf("Out of bounds of array: DYNARRAY.GET_DA()\n");
         return NULL;
     }
@@ -115,7 +126,7 @@ int set_da(DYNARRAY *da, int idx, int key, char value) {
         printf("Passed a null array: DYNARRAY.SET_DA()\n");
         return ERR_VAL;
     }
-    if (idx >= da->size) {
+    if (idx < 0 || idx >= da->size) {
         printf("Out of bounds of array: DYNARRAY.SET_DA()\n");
         return ERR_VAL;
     }
@@ -124,6 +135,24 @@ int set_da(DYNARRAY *da, int idx, int key, char value) {
 
     return 0;
 }
+
+/* swaps items at indices i and j */
+int swap_da(DYNARRAY *da, int i, int j) {
+    if (da == NULL) {
+        printf("Passed a null array: DYNARRAY.SWAP_DA()\n");
+        return ERR_VAL;
+    }
+    if (i < 0 || i >= da->size || j < 0 || j >= da->size) {
+        printf("Out of bounds of array: DYNARRAY.SWAP_DA()\n");
+        return ERR_VAL;
+    }
+    ITEM temp = *(da->array + i);
+    *(da->array + i) = *(da->array + j);
+    *(da->array + j) = temp;
+
+    return 0;
+}
+
 
 int insert_da(DYNARRAY *da, int idx, int key, char value) {
     if (da == NULL) {
@@ -134,7 +163,7 @@ int insert_da(DYNARRAY *da, int idx, int key, char value) {
     if (da->size == da->capacity) {
         increase_cap(&da);
     }
-    if (idx > da->size) {
+    if (idx < 0 || idx > da->size) {
         printf("Out of bounds of array: DYNARRAY.INSERT_DA()\n");
     }
     ITEM* new = new_item(key, value);
@@ -155,13 +184,15 @@ int remove_da(DYNARRAY *da, int idx) {
         printf("Passed a null array: DYNARRAY.REMOVE_DA()\n");
         return ERR_VAL;
     }
-    if (idx >= da->size) {
+    if (idx < 0 || idx >= da->size) {
         printf("Out of bounds of array: DYNARRAY.REMOVE_DA()\n");
     }
     /* starting at index, shift everything one down from the right */
     for (int i = idx; i<da->size-1; ++i) {
         *(da->array + i) = *(da->array + i + 1);
     }
+    ITEM *end = da->array + da->size - 1;
+    end = NULL;
     --(da->size);
     /* make underlying array smaller if below 1/3 capacity */
     if (da->size < da->capacity / 3) {
@@ -191,7 +222,7 @@ int print_da(const DYNARRAY *da) {
         printf(" %d", (da->array + i)->key);
     }
     printf("\n");
-    printf("v:");
+    printf("V:");
     for (int i=0; i<da->size; ++i) {
         printf(" %c", (da->array + i)->value);
     }

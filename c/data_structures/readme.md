@@ -4,7 +4,8 @@ Some abstract data structures implemented in C. Currently contains:
 + Queue
 + Stack
 + (Red-black) binary tree
-+ Resizing arrays
++ Resizing array
++ Min-heap
 
 To use these data types, change the code in `src/main.c` and compile using `make`:  
 ```
