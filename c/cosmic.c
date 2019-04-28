@@ -92,11 +92,16 @@ int print_and_count(n) {
 
 int just_count(n) {
     if (n == 4) {
+        printf(" %d.", 4);
         return 1;
     }
+    printf(" %d,", n);
     return 1 + just_count(num_letters(n));
 }
 
+/* this main function is a huge mess,
+ * comment out/delete whatever you don't need for each function above
+ */
 int main(int argc, char *argv[]) {
     int number;
     int count;
@@ -116,25 +121,36 @@ int main(int argc, char *argv[]) {
             printf("Failed to parse integer.\n");
             return -1;
         }
-        /* ensure enough space for jumping forward (for cases 1,2,3) */
-        int arrlen = (number > 5) ? number : 5;
-        int *arr = (int*) malloc(arrlen*sizeof(int));
-        for (int i=1; i<=number; ++i) {
-            count = just_count(i);
-            arr[i - 1] = count;
-        }
 
         int max_index = -1;
         int max_value = 0;
 
+        /* ensure enough space for jumping forward (for cases 1,2,3) */
+        int arrlen = (number > 5) ? number : 5;
+        int *arr = (int*) malloc(arrlen*sizeof(int));
         for (int i=1; i<=number; ++i) {
+            printf("COSMIC(%d) =", i);
+            count = just_count(i);
+            printf("\n");
+            if (count > max_value) {
+                max_value = count;
+                max_index = i;
+            }
+            arr[i - 1] = count;
+        }
+
+        // int acc = 0;
+/*
+        for (int i=1; i<=number; ++i) {
+            // acc += arr[i - 1];
             if (arr[i - 1] > max_value) {
                 max_value = arr[i - 1];
                 max_index = i;
             }
         }
-
+*/
         printf("%d has the longest sequence (%d elements).\n", max_index, max_value);
+        // printf("Sum: %d.\n", acc);
     }
 
     return 0;
