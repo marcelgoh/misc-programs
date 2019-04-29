@@ -24,3 +24,4 @@
 *.cmo
 *.cmx
 *_build*
+*.mix
