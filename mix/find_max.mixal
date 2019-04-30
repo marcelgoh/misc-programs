@@ -1,0 +1,30 @@
+* Find the maximum of array of numbers
+
+TERM    EQU     19              output device
+        ORIG    1000
+X       CON     2               array of numbers
+        CON     21
+        CON     3
+        CON     19
+        CON     20
+N       CON     5               number of elements in array
+MAX     EQU     2000
+        ORIG    3000
+MAXIMUM STJ     EXIT            subroutine linkage
+INIT    ENT3    0,1             k <- n
+        JMP     CHANGEM         j <- n, m <- X[n], k <- n-1
+LOOP    CMPA    X,3             compare
+        JGE     *+3
+CHANGEM ENT2    0,3             change m. j <- k
+        LDA     X,3             m <- X[k]
+        DEC3    1               decrease k
+        J3P     LOOP            all tested?
+EXIT    JMP     *               return to caller
+START   LD1     N
+        JMP     MAXIMUM
+        LDX     X,2             
+        CHAR
+        STX     MAX
+        OUT     MAX(TERM)       print maximum
+        HLT
+        END     START
