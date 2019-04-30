@@ -1,0 +1,38 @@
+* Get the n-th Fibonacci number
+
+TERM    EQU     19
+BUF     EQU     500
+* DATA
+        ORIG    2000
+A       CON     0
+B       CON     1
+N       CON     0
+MSG     ALF     "ENTER"
+        ALF     " A NU"
+        ALF     "MBER "
+        ALF     "LESS "
+        ALF     "THAN "
+        ALF     "00044"
+* CODE
+        ORIG    3000
+START   OUT     MSG(TERM)               print message
+        IN      BUF(TERM)               get number as input
+        LDX     BUF                     convert to numeric
+        NUM
+        STA     N
+        LD2     N                       initialise loop counter
+LOOP    J2NP    EXIT                    if r2 non-positive, exit loop
+        LDA     A                       save contents of A in register
+        ADD     B                       rA <- A + B
+        ENT1    A                       store address of A
+        MOVE    B                       copy B to A
+        STA     B                       store register in B
+        DEC2    1                       decrement loop counter
+        JMP     LOOP
+EXIT    LDX     A                       convert answer to char
+        CHAR
+        STA     BUF
+        STX     BUF+1
+        OUT     BUF(TERM)
+        HLT
+END     END     START
