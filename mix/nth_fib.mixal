@@ -21,7 +21,7 @@ START   OUT     MSG(TERM)               print message
         NUM
         STA     N
         LD2     N                       initialise loop counter
-LOOP    J2NP    EXIT                    if r2 non-positive, exit loop
+LOOP    J2NP    EXIT                    if rI2 non-positive, exit loop
         LDA     A                       save contents of A in register
         ADD     B                       rA <- A + B
         ENT1    A                       store address of A

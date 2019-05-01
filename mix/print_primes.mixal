@@ -1,0 +1,56 @@
+* Prints table of first 500 primes
+* TAOCP Vol. 1 pp. 144-145 by Donald Knuth
+
+* DATA:
+L       EQU     500             Number of primes to find
+PRINTER EQU     19              Unit no. of printer
+PRIME   EQU     -1              Memory area for table of primes
+BUF0    EQU     2000            Memory area for BUFFER[0]
+BUF1    EQU     BUF0+25         Memory area for BUFFER[1]
+*       INITIAL CONTENTS OF TABLES AND BUFFERS
+        ORIG    PRIME+1
+        CON     2               First prime is 2
+        ORIG    BUF0-5          
+TITLE   ALF     "FIRST"         Title string
+        ALF     " FIVE"
+        ALF     " HUND"
+        ALF     "RED P"
+        ALF     "RIMES"
+        ORIG    BUF0+24         Each buffer refers to the other
+        CON     BUF1+10
+        ORIG    BUF1+24
+        CON     BUF0+10
+* PROGRAM: rI1 := J - 500; rI2 := N; rI3 := K;
+*          rI4 := B; rI5 := M + multiples of 50
+        ORIG    3000
+START   IOC     0(PRINTER)      New page of printer.
+        LD1     =1-L=           Start table. J <- 1.
+        LD2     =3=                 N <- 3.
+2H      INC1    1               N is prime. J <- J + 1.
+        ST2     PRIME+L,1           PRIME[J] <- N.
+        J1Z     2F              500 found?
+4H      INC2    2               Advance N by 2 (check odd nums only)
+        ENT3    2               K <- 2.
+6H      ENTA    0               PRIME[K]\N?
+        ENTX    0,2
+        DIV     PRIME,3
+        JXZ     4B                  Remainder = 0?
+        CMPA    PRIME,3         PRIME[K] large?
+        INC3    1               Advance K.
+        JG      6B                  Jump if Quotient > PRIME[K].
+        JMP     2B                  Otherwise N is prime.
+2H      OUT     TITLE(PRINTER)  Print title.
+        ENT4    BUF1+10             Set B <- 1.
+        ENT5    -50                 Set M <- 0.
+2H      INC5    L+1                 Advance M.
+4H      LDA     PRIME,5         Set up line (right to left)
+        CHAR
+        STX     0,4(1:4)
+        DEC4    1
+        DEC5    50              rI5 goes down by 50 until nonpositive
+        J5P     4B
+        OUT     0,4(PRINTER)    Print line.
+        LD4     24,4                Switch buffers.
+        J5N     2B                  If rI5 = 0, we're done
+        HLT
+        END     START
