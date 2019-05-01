@@ -1,0 +1,126 @@
+* Prints dates of Easter from 1951 to 2050
+* Easter is the first Sunday following the first full 
+* moon on or after March 21.
+
+TERM    EQU     19
+BUF     EQU     1000
+* DATA:
+        ORIG    500
+*       AUXILIARY VARIABLES AND DATA
+MARCH   ALF     " MAR "
+APRIL   ALF     " APR "
+Y       CON     1996            Y := the year to check
+G       EQU     Y+1             G := golden number
+C       EQU     Y+2             C := century
+X       EQU     Y+3             X := number of times leap year dropped
+Z       EQU     Y+4             Z := sync with moon's orbit
+D       EQU     Y+5             D := March ((-D) mod 7) is a Sunday
+E       EQU     Y+6             E := the epact (specifies when full moon is)
+N       EQU     Y+7
+MONTH   EQU     Y+8             N and MONTH := the date of Easter             
+* EASTER subroutine: finds date of Easter with Y < 100000
+        ORIG    3000
+EASTER  STJ     9F              Subroutine linkage.
+        ENTA    0               Calculate golden number G.
+        LDX     Y
+        DIV     =19=
+        INCX    1
+        STX     G                   G <- (Y mod 19) + 1
+        ENTA    0               Calculate century C as well as corrections.
+        LDX     Y
+        DIV     =100=
+        INCA    1
+        STA     C                   C <- Y/100 + 1.
+        ADD     C
+        ADD     C
+        SRAX    5
+        DIV     =4=
+        DECA    12
+        STA     X                   X <- 3*C/4 - 12.
+        LDA     C
+        MUL     =8=
+        INCX    5
+        DIV     =25=
+        DECA    5
+        STA     Z                   Z <- (8*C + 5)/25 - 5.
+        LDA     Y               Find Sunday.
+        MUL     =5=
+        DIV     =4=
+        SUB     X
+        DECA    10
+        STA     D                   D <- 5*Y/4 - X - 10.
+        LDA     G               Find epact.
+        MUL     =11=
+        SLAX    5
+        INCA    20
+        ADD     Z
+        SUB     X
+        SRAX    5
+        DIV     =30=
+        JXNN    2F                  Ensure remainder is positive.
+        INCX    30                  E <- (11*G + 20 + Z - X) mod 30.
+2H      CMPX    =25=                If E = 25,
+        JNE     2F
+        LD1     G
+        CMP1    =11=                    If G > 11,
+        JLE     2F
+        INCX    1                           E <- E + 1.                       
+        JMP     4F
+2H      CMPX    =24=                Or if E = 24,
+        JNE     4F
+        INCX    1                       E <- E + 1.
+4H      STX     E
+        LDA     =44=            Find full moon.
+        SUB     E                   N <- 44 - E.
+        CMPA    =21=                If N < 21,
+        JGE     2F
+        INCA    30                      N <- N + 30.
+2H      STA     N
+        LDA     D               Advance to Sunday.
+        ADD     N
+        SRAX    5
+        DIV     =7=
+        STX     D                   D <- (D + N) mod 7.
+        LDA     N
+        INCA    7
+        SUB     D                   N <- N + 7 - D.
+        CMPA    =31=            Get month.
+        JG      2F                  If N <= 31, N MARCH
+        LDX     MARCH
+        STX     MONTH
+        JMP     4F
+2H      DECA    31                  Else, (N - 31) APRIL
+        LDX     APRIL
+        STX     MONTH
+4H      STA     N
+9H      JMP     *               Jump to caller.
+* Main entry point of program
+START   LD2     =1951=          Start loop counter at 1950.
+LOOP    ST2     Y
+        JMP     EASTER
+        LDA     N
+        CHAR
+        STX     BUF             Fill buffer with date.
+        LDX     MONTH
+        STX     BUF+1
+        LDA     Y
+        CHAR
+        STX     BUF+2
+        INC2    1               Print two years per line.
+        ST2     Y
+        JMP     EASTER
+        LDA     N
+        CHAR
+        STX     BUF+4
+        LDX     MONTH
+        STX     BUF+5
+        LDA     Y
+        CHAR
+        STX     BUF+6
+        OUT     BUF(TERM)
+        INC2    1
+        CMP2    =2050=          If loop counter > 2050, exit loop
+        JG      9F
+        JMP     LOOP
+9H      HLT
+        END     START
