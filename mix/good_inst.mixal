@@ -1,0 +1,111 @@
+* Determine if the instruction at INST is valid
+
+TERM    EQU     19
+* DATA
+        ORIG    2000
+GMSG    ALF     "GOOD "
+        ORIG    2015
+BMSG    ALF     "BAD  "
+        ORIG    2030
+INST    ADD     4000(0:6)                    Word to check
+F       EQU     1(4:4)
+FMAX    EQU     F-1
+TABLE   NOP     GOOD(FMAX)              Each entry contains the max value for each field.
+        ADD     FLTFLD(5:5)
+        SUB     FLTFLD(5:5)
+        MUL     FLTFLD(5:5)
+        DIV     FLTFLD(5:5)
+        HLT     GOOD
+        SRC     GOOD
+        MOVE    CHKMEM(FMAX)
+        LDA     CHKFLD(5:5)
+        LD1     CHKFLD(5:5)
+        LD2     CHKFLD(5:5)
+        LD3     CHKFLD(5:5)
+        LD4     CHKFLD(5:5)
+        LD5     CHKFLD(5:5)
+        LD6     CHKFLD(5:5)
+        LDX     CHKFLD(5:5)
+        LDAN    CHKFLD(5:5)
+        LD1N    CHKFLD(5:5)
+        LD2N    CHKFLD(5:5)
+        LD3N    CHKFLD(5:5)
+        LD4N    CHKFLD(5:5)
+        LD5N    CHKFLD(5:5)
+        LD5N    CHKFLD(5:5)
+        LDXN    CHKFLD(5:5)
+        STA     CHKFLD(5:5)
+        ST1     CHKFLD(5:5)
+        ST2     CHKFLD(5:5)
+        ST3     CHKFLD(5:5)
+        ST4     CHKFLD(5:5)
+        ST5     CHKFLD(5:5)
+        ST6     CHKFLD(5:5)
+        STX     CHKFLD(5:5)
+        STJ     CHKFLD(5:5)
+        STZ     CHKFLD(5:5)
+        JBUS    CHKMEM(19)
+        IOC     GOOD(19)
+        IN      CHKMEM(19)
+        OUT     CHKMEM(19)
+        JRED    CHKMEM(19)
+        JLE     CHKMEM
+        JANP    CHKMEM
+        J1NP    CHKMEM
+        J2NP    CHKMEM
+        J3NP    CHKMEM
+        J4NP    CHKMEM
+        J5NP    CHKMEM
+        J6NP    CHKMEM
+        JXNP    CHKMEM
+        ENNA    GOOD
+        ENN1    GOOD
+        ENN2    GOOD
+        ENN3    GOOD
+        ENN4    GOOD
+        ENN5    GOOD
+        ENN6    GOOD
+        ENNX    GOOD
+        CMPA    FLTFLD(5:5)
+        CMP1    CHKFLD(5:5)
+        CMP2    CHKFLD(5:5)
+        CMP3    CHKFLD(5:5)
+        CMP4    CHKFLD(5:5)
+        CMP5    CHKFLD(5:5)
+        CMP6    CHKFLD(5:5)
+        CMPX    CHKFLD(5:5)
+* CODE:
+        ORIG    3000
+GOOD    OUT     GMSG(TERM)
+        JMP     END
+BAD     OUT     BMSG(TERM) 
+        JMP     END
+FLTFLD  LD1     INST(4:4)
+        CMP1    =6=                     F = 6 is OK for float instructions.
+        JE      GOOD 
+CHKFLD  ENTA    0                       Ensure F = 8L + R for 0 <= L, R <= 5:
+        LDX     INST(4:4)                   (Very clever, Prof. Knuth!)
+        DIV     =9=                         rA <- F / 9; rX <- F % 9.
+        STX     2F(0:2)
+2H      INCA    0                           rA <- rA + rX
+        CMPA    =5=                         If rA > 5, reject.
+        JG      BAD
+CHKMEM  LDA     INST(3:3)               If I != 0, accept.
+        JANZ    GOOD
+        LDA     INST(0:2)
+        JAN     BAD
+        CMPA    =3999=                  Else, ensure 0 <= AA <= 3999.
+        JG      BAD
+        JMP     GOOD
+START   LDA     INST(5:5)
+        CMPA    =64=                    Ensure C < 64.
+        JGE     BAD
+        LD1     INST(3:3)
+        CMP1    =6=                     Ensure I <= 6.
+        JG      BAD
+        LD1     INST(5:5)               rI1 <- C-field.
+        CMPA    TABLE,1(4:4)            Ensure F < corresponding F-field of table.
+        JG      BAD
+        LD1     TABLE,1(1:2)            rI1 <- AA-field.
+        JMP     0,1                     Jump to corresponding routine.
+END     END     START
