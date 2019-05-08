@@ -1,0 +1,71 @@
+* Prints an N*N magic square to printer.dev
+
+PRINTER EQU     18
+* DATA:
+BUF     EQU     500
+MAGIC   EQU     1000
+N       EQU     23              Side length of square (must be odd)
+
+* CODE:
+* Registers used:       rI1 = curr (next number to print)
+*                       rI2 = offset from start of matrix
+*                       rA, rX, rI3 = other affected registers
+        ORIG    3000
+I       CON     0               Location to store current offset when we need.
+START   ENT1    N*N             Set curr <- N^2. (We work backwards.)
+        ENT2    N*N+1/2-N       Set offset <- the square above the middle square
+        ST1     MAGIC,2         Store first number and increment current
+        DEC1    1
+LOOP    ST2     I               Stash current offset in memory.
+        ENTA    0               If I mod N = 1,
+        LDX     I                   we're in the first column.
+        DIV     =N=
+        CMPX    =1=
+        LD3     I               Set temp <- offset - (N + 1) (the next square to fill).
+        DEC3    N+1
+        JNE     1F
+        INC3    N               If we're in the first column, temp <- temp + N.
+1H      ENTA    0
+        LDX     I
+        DECX    1
+        DIV     =N=             If (I - 1) / N = 0, we're in the top row.
+        JANZ    1F
+        INC3    N*N                 and we need to shift down N rows.
+1H      LDA     MAGIC,3         If this square is empty, jump forward (and fill it).
+        JAZ     1F
+        ST2     I               If not, start back at the old offset.
+        LD3     I
+        ENTA    0                   We check if we're in the top two rows.
+        LDX     I
+        DECX    1
+        DIV     =N=
+        DECA    2
+        JANN     2F
+        INC3    N*N               If so, shift down N rows.
+2H      DEC3    N+N             Either way, shift up 2 rows.
+1H      ST1     MAGIC,3         Fill new square.
+        ST3     I
+        LD2     I
+        DEC1    1               Decrement counter
+        J1P     LOOP            While curr is positive, loop.
+* Registers used:       rI1 = offset from start of magic square
+*                       rI2 = row counter
+*                       rI3 = column counter
+PRINT   ENT1    1               Set offset <- 1.
+        ENT2    N               Set i <- n.
+        ENT3    0               Set j <- 0.
+PLOOP   LDA     MAGIC,1         Set rA <- MAGIC[offset].
+        CHAR
+        STX     BUF,3(3:5)
+        INC1    1
+        INC3    1
+        CMP3    =N=
+        JL      PLOOP
+        DEC2    1
+        OUT     BUF(PRINTER)
+        ENT3    0
+        J2P     PLOOP
+        HLT
+        END     START
+
+

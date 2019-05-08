@@ -25,3 +25,4 @@
 *.cmx
 *_build*
 *.mix
+*.dev
