@@ -1,8 +1,8 @@
 * Prints dates of Easter from 1951 to 2050
-* Easter is the first Sunday following the first full 
+* Easter is the first Sunday following the first full
 * moon on or after March 21.
 
-TERM    EQU     19
+TERM    EQU     18
 BUF     EQU     1000
 * DATA:
         ORIG    500
@@ -17,7 +17,7 @@ Z       EQU     Y+4             Z := sync with moon's orbit
 D       EQU     Y+5             D := March ((-D) mod 7) is a Sunday
 E       EQU     Y+6             E := the epact (specifies when full moon is)
 N       EQU     Y+7
-MONTH   EQU     Y+8             N and MONTH := the date of Easter             
+MONTH   EQU     Y+8             N and MONTH := the date of Easter
 * EASTER subroutine: finds date of Easter with Y < 100000
         ORIG    3000
 EASTER  STJ     9F              Subroutine linkage.
@@ -64,7 +64,7 @@ EASTER  STJ     9F              Subroutine linkage.
         LD1     G
         CMP1    =11=                    If G > 11,
         JLE     2F
-        INCX    1                           E <- E + 1.                       
+        INCX    1                           E <- E + 1.
         JMP     4F
 2H      CMPX    =24=                Or if E = 24,
         JNE     4F
@@ -100,23 +100,23 @@ LOOP    ST2     Y
         JMP     EASTER
         LDA     N
         CHAR
-        STX     BUF             Fill buffer with date.
+        STX     BUF(4:5)        Fill buffer with date (2 digits).
         LDX     MONTH
         STX     BUF+1
         LDA     Y
         CHAR
-        STX     BUF+2
+        STX     BUF+2(2:5)          4 digits.
         INC2    1               Print two years per line.
         ST2     Y
         JMP     EASTER
         LDA     N
         CHAR
-        STX     BUF+4
+        STX     BUF+4(4:5)
         LDX     MONTH
         STX     BUF+5
         LDA     Y
         CHAR
-        STX     BUF+6
+        STX     BUF+6(2:5)
         OUT     BUF(TERM)
         INC2    1
         CMP2    =2050=          If loop counter > 2050, exit loop
