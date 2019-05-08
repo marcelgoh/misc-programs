@@ -1,0 +1,165 @@
+* Finds the address of a saddle point if there is one
+
+TERM    EQU     19
+* DATA:
+        ORIG    1009            Test matrix
+MATRIX  CON     3               (a_{ij} is in location 1000 + 8*i + j)
+        CON     2
+        CON     1
+        CON     2
+        CON     2
+        CON     1
+        CON     1
+        CON     1
+ROW2    CON     2
+        CON     2
+        CON     3
+        CON     2
+        CON     4
+        CON     1
+        CON     0
+        CON     2
+ROW3    CON     1
+        CON     2
+        CON     3
+        CON     2
+        CON     1
+        CON     1
+        CON     2
+        CON     1
+ROW4    CON     2
+        CON     3
+        CON     3
+        CON     4
+        CON     3
+        CON     2
+        CON     3
+        CON     3
+ROW5    CON     0
+        CON     1
+        CON     2
+        CON     3
+        CON     0
+        CON     2
+        CON     1
+        CON     4
+ROW6    CON     2
+        CON     1
+        CON     2
+        CON     1
+        CON     1
+        CON     1
+        CON     2
+        CON     4
+ROW7    CON     3
+        CON     2
+        CON     1
+        CON     0
+        CON     0
+        CON     1
+        CON     1
+        CON     2
+ROW8    CON     3
+        CON     3
+        CON     2
+        CON     1
+        CON     2
+        CON     1
+        CON     2
+        CON     2
+ROW9    CON     4
+        CON     1
+        CON     4
+        CON     2
+        CON     0
+        CON     1
+        CON     3
+        CON     4
+MINVALS EQU     1100
+MAXVALS EQU     1115
+* CODE:
+        ORIG    3000
+* Calling sequence:     JMP FILLMIN
+* Entry conditions:     -
+* Exit conditions:      MINVALS filled with minimum values of rows
+* Registers used:       rI1 = pointer to matrix
+*                       rI2 = inner loop counter
+*                       rI3 = outer loop counter
+FILLMIN STJ     NIMLLIF
+        ENT1    MATRIX
+        ENT3    1
+MIN8    ST1     CHMA(0:2)       Store starting address where required
+        ST1     LOOPA(0:2)
+        ENT2    7               We loop 8 times [7 .. 0]
+        JMP     CHMA            Change minimum (first time).
+LOOPA   CMPA    *,2             Compare to minimum
+        JLE     1F                  If rA <= new value, skip change.
+CHMA    LDA     *,2             Change rA to new minimum.
+1H      DEC2    1
+        J2NN    LOOPA           All numbers tested?
+        STA     MINVALS,3       (Out of inner loop, enter minval)
+        INC1    8
+        INC3    1
+        CMP3    =9=             9 rows tested?
+        JLE     MIN8
+NIMLLIF JMP     *               Return to caller
+* Calling sequence:     JMP FILLMAX
+* Entry conditions:     -
+* Exit conditions:      MAXVALS filled with maximum values of columns
+* Registers used:       rI1 = pointer to matrix
+*                       rI2 = inner loop counter
+*                       rI3 = outer loop counter
+FILLMAX STJ     XAMLLIF
+        ENT1    MATRIX
+        ENT3    1
+MAX9    ST1     CHMB(0:2)       Store starting address where required
+        ST1     LOOPB(0:2)
+        ENT2    64              We loop 9 times [64, 56, 48, ..., 0]
+        JMP     CHMB            Change maximum (first time).
+LOOPB   CMPA    *,2             Compare to maximum
+        JGE     1F                  If rA >= new value, skip change.
+CHMB    LDA     *,2             Change rA to new minimum.
+1H      DEC2    8
+        J2NN    LOOPB           All numbers tested?
+        STA     MAXVALS,3       (Out of inner loop, enter minval)
+        INC1    1
+        INC3    1
+        CMP3    =8=             8 columns tested?
+        JLE     MAX9
+XAMLLIF JMP     *               Return to caller
+* Calling sequence:     JMP CHKSDL
+* Entry conditions:     MINVALS filled with minimum values of each row
+*                       MAXVALS filled with maximum values of each column
+* Exit conditions:      rI1 = address of saddle point if it exists, 0 otherwise
+* Registers used:       rI1 = pointer to matrix offset
+*                       rI2 = i
+*                       rI3 = j
+CHKSDL  STJ     LDSKHC
+        ENT1    0               rI1 points to matrix
+        ENT2    1               i <- 1.
+        ENT3    1               j <- 1.
+LOOPC   LDA     MATRIX,1        rA <- a_{ij}
+        CMPA    MINVALS,2       Is rA the minimum value in its row?
+        JNE     1F
+        CMPA    MAXVALS,3       Is rA the maximum value in its column?
+        JNE     1F
+        ENT1    MATRIX,1
+        JMP     LDSKHC          If so, rA is saddle point, exit.
+1H      INC1    1
+        INC3    1
+        CMP3    =8=             rA not saddle point; are we at end of the row?
+        JLE     LOOPC
+        ENT3    1               If so, j <- 1,
+        INC2    1                  and i <- i + 1.
+        CMP2    =9=             Are we at the end of the matrix?
+        JLE     LOOPC
+        ENT1    0               If so, we didn't find saddle point.
+LDSKHC  JMP     *               Return to caller
+* Entry point
+START   JMP     FILLMIN
+        JMP     FILLMAX
+        JMP     CHKSDL
+        OUT     MINVALS(TERM)
+        OUT     MAXVALS(TERM)
+        HLT
+        END     START
