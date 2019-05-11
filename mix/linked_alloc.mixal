@@ -1,0 +1,82 @@
+* Various exercises related to linked allocation
+
+* DEFS
+TERM    EQU     19
+BUF     EQU     1000
+INFO    EQU     0:3             Definition of INFO field
+LINK    EQU     4:5             Definition of LINK field
+
+* DATA:
+
+* CODE:
+        ORIG    3000
+AVAIL   CON     500             Location of available memory
+* Calling sequence:     JMP LINKSTK
+* Entry conditions:     -
+* Exit conditions:      AVAIL stack linked.
+* Registers used:       rI1 = loop counter.
+LINKSTK STJ     KTSKNIL
+        LD1     AVAIL          i <- AVAIL - 1.
+        DEC1
+1H      ST1     1,1(LINK)      While i > 0,
+        DEC1    1                   MEMORY[i](LINK) <- i + 1.
+        J1P     1B
+KTSKNIL JMP     *
+* Halt on overflow
+OVERFLW HLT
+* Calling sequence:     JMP INSERT      Jump to subroutine.
+*                       NOP T           Location of pointer variable.
+* Entry conditions:     rA = information for the INFO field of a new node.
+* Exit conditions:      The stack whose pointer is the link variable T has the
+*                       new node on top.
+* Registers used:       rI1 = T, rI2, rI3 = temp variables.
+INSERT  STJ     TRESNI          Store return address.
+        STJ     *+1
+        LD1     *(0:2)          rI1 <- T.
+        LD2     AVAIL           P <- AVAIL.
+        J2Z     OVERFLW         AVAIL = NULL?
+        LD3     0,2(LINK)
+        ST3     AVAIL           AVAIL <- LINK(P).
+        STA     0,2(INFO)       INFO(P) <- rA.
+        LDA     0,1
+        STA     0,2(LINK)       LINK(P) <- T.
+        ST2     0,1             T <- P.
+        STJ
+TRESNI  JMP     *               Return to caller.
+* Calling sequence:     JMP PRINT       Jump to subroutine.
+*                       NOP T           Location of pointer to list
+* Exit conditions:      Contents of list at T printed to typewriter device.
+* Registers used:       rI1 = T. rA, rX, rI2 also affected.
+PRINT   STJ     TNIRP
+        STJ     *+1
+        ENT1    *
+        LD1     0,1(0:2)        rI1 <- T.
+        LD1     0,1(LINK)
+        ENT2    0               rI2 <- loop counter.
+1H      LDA     0,1(INFO)
+        CHAR
+        STX     BUF,2(2:5)
+        INC2    1
+        CMP2    =14=            Cap out at 14 items to print.
+        JE      PRINTLN
+        LD1     0,1(LINK)
+        J1NZ    1B
+PRINTLN OUT     BUF(TERM)
+TNIRP   JMP     *
+* Main entry point of program
+STACK   CON     0
+START   JMP     LINKSTK
+        LDA     =6=
+        JMP     INSERT
+        NOP     STACK
+        LDA     =4=
+        JMP     INSERT
+        NOP     STACK
+        LDA     =11=
+        JMP     INSERT
+        NOP     STACK
+        JMP     PRINT
+        NOP     STACK
+        LDA     STACK
+        HLT
+        END     START
