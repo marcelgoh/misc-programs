@@ -22,8 +22,12 @@ LINKSTK STJ     KTSKNIL
         DEC1    1                   MEMORY[i](LINK) <- i + 1.
         J1P     1B
 KTSKNIL JMP     *
-* Halt on overflow
+
+* Halt on overflow/underflow
 OVERFLW HLT
+UNDRFLW ENTA    324
+        HLT
+
 * Calling sequence:     JMP INSERT      Jump to subroutine.
 *                       NOP T           Location of pointer variable.
 * Entry conditions:     rA = information for the INFO field of a new node.
@@ -38,11 +42,34 @@ INSERT  STJ     TRESNI          Store return address.
         LD3     0,2(LINK)
         ST3     AVAIL           AVAIL <- LINK(P).
         STA     0,2(INFO)       INFO(P) <- rA.
-        LDA     0,1
-        STA     0,2(LINK)       LINK(P) <- T.
+        LD3     0,1
+        ST3     0,2(LINK)       LINK(P) <- T.
         ST2     0,1             T <- P.
-        STJ
 TRESNI  JMP     *               Return to caller.
+
+* Calling sequence:     JMP DELETE      Jump to subroutine.
+*                       NOP T           Location of pointer variable.
+*                       JMP UNDERFLOW   First exit, if UNDERFLOW sensed
+* Entry conditions:     -
+* Exit conditions:      If stack empty, take first exit.
+*                       Otherwise, top node of stack is deleted, exit is made
+*                       to location under first exit. rA = INFO(deleted node)
+* Registers used:               rI1 = T, rI2, rI3 = temp variables.
+DELETE  STJ     *+1
+        ENT2    *               rI2 <- rJ.
+        LD1     0,2(0:2)        rI1 <- T.
+        LD3     0,1(LINK)       rI3 <- P.
+        J3Z     0,2             Take first exit if P = 0.
+        INC2    2
+        ST2     ETELED(0:2)     Store second exit's address.
+        LDA     0,3(INFO)       rA <- INFO(P)
+        LD2     0,3(LINK)
+        ST2     0,1             T <- LINK(P).
+        LD2     AVAIL
+        ST2     0,3(LINK)       LINK(P) <- AVAIL.
+        ST3     AVAIL           AVAIL <- P.
+ETELED  JMP     *
+
 * Calling sequence:     JMP PRINT       Jump to subroutine.
 *                       NOP T           Location of pointer to list
 * Exit conditions:      Contents of list at T printed to typewriter device.
@@ -63,6 +90,7 @@ PRINT   STJ     TNIRP
         J1NZ    1B
 PRINTLN OUT     BUF(TERM)
 TNIRP   JMP     *
+
 * Main entry point of program
 STACK   CON     0
 START   JMP     LINKSTK
@@ -72,6 +100,13 @@ START   JMP     LINKSTK
         LDA     =4=
         JMP     INSERT
         NOP     STACK
+
+*       Test delete
+        ENTA    0
+        JMP     DELETE
+        NOP     STACK
+        JMP     UNDRFLW
+
         LDA     =11=
         JMP     INSERT
         NOP     STACK

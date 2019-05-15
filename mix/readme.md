@@ -13,3 +13,4 @@ The following programs are solutions to exercises in _The Art of Computer Progra
 
 ### Chapter 2
 + (§2.2.3 Ex. 2) [Linked list insertion](linked_alloc.mixal) (at location `INSERT`)
++ (§2.2.3 Ex. 3) [Linked list deletion](linked_alloc.mixal) (at location `DELETE`)
