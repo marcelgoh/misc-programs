@@ -1,5 +1,7 @@
 * Permutation multiplication and inversion
-* TAOCP Vol. 1 pp. 168-169 by Donald Knuth
+* TAOCP Vol. 1 pp. 168-169, 177 by Donald Knuth
+* Devices 16 and 18 deal with multiplication
+* Device 19 prints the inverse of permutation stored at X
 
 * Constants and locations
 MAXWDS  EQU     1200                    Maximum length of input
@@ -8,7 +10,20 @@ ANS     ORIG    *+MAXWDS                Place for answer
 OUTBUF  ORIG    *+24                    Place for printing
 CARDS   EQU     16                      Unit number for card reader
 PRINTER EQU     18                      Unit number for printer
+TERM    EQU     19                      Unit number for terminal
+START   CON     0
+SIZE    CON     0
+* DATA:
+N       EQU     6                       Number of elements in permutation
+X       CON     0
+        CON     6                       Permutation to invert
+        CON     2
+        CON     1
+        CON     5
+        CON     4
+        CON     3
 * CODE:
+        ORIG    3000
 BEGIN   IN      PERM(CARDS)             Read first card.
         ENT2    0
         LDA     EQUALS
@@ -43,7 +58,7 @@ BEGIN   IN      PERM(CARDS)             Read first card.
         JL      2B
         LDA     LPREN                       Prepare for main program.
         ENT1    ANS                         rI1 = place to store next answer.
-OPEN    ENT2    0                       A2. Open.
+OPEN    ENT3    0                       A2. Open.
 1H      LDXN    PERM,3                      Look for untagged element.
         JXN     GO
         INC3    1
@@ -60,8 +75,24 @@ DONE    CMP1    =ANS=
         INC3    24
         LDX     ANS,3                   Print as many lines as necessary.
         JXNZ    *-3
+* Begin inversion code (unrelated to multiplication)
+* rI1 = m; rI2 = -i; rI3 = j; n = N
+INVERT  ENT1    N                       I1. Initialise. m <- n.
+        ENT3    -1                          j <- -1.
+2H      LD2N    X,1                     I2. Next element. i <- X[m].
+        J2P     5F                          To I5 if i < 0.
+3H      ST3     X,1                     I3. Invert one. X[m] <- j.
+        ENN3    0,1                         j <- -m.
+        ENN1    0,2                         m <- i.
+        LD2N    X,1                         i <- X[m].
+4H      J2N     3B                      I4. End of cycle? To I3 if i > 0.
+        ENN2    0,3                         Otherwise, set i <- j.
+5H      ST2     X,1                     I5. Store final value. X[m] <- -i.
+6H      DEC1    1                       I6. Loop on m.
+        J1P     2B                          To I2 if m > 0.
+        OUT     X(TERM)                 Print (for debugging)
         HLT
-*
+* End inversion code
 LPREN   ALF     "    ("                 Constants used in the program
 RPREN   ALF     ")    "
 EQUALS  ALF     "    ="
