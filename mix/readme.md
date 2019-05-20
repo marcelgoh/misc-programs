@@ -6,6 +6,7 @@ Miscellaneous programs written in MIX Assembly Language. They can be run using t
 The following programs are solutions to exercises in _The Art of Computer Programming_ by Donald Knuth:
 
 ### Chapter 1
++ (§1.3.1 Ex. 26) [Card-loading routine](card_load.mixal) &mdash; input formatted on [punched cards](dev/1_3_1_26_input.txt)
 + (§1.3.2 Ex. 9) [Valid MIX instructions](good_inst.mixal)
 + (§1.3.2 Ex. 10) [Matrix saddle point](saddle_point.mixal)
 + (§1.3.2 Ex. 14) [Dates of Easter](easter.mixal) &mdash; printed [output](dev/easter_1951_2050.txt)
