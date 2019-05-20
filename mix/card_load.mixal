@@ -1,0 +1,59 @@
+* Simulates a card-loading routine
+
+* DEFS
+TERM    EQU     19
+CARDRD  EQU     16
+PRINTER EQU     18
+
+* DATA:
+
+* CODE:
+        ORIG    500
+        LDA     600
+        LDX     601
+        HLT
+        ORIG    0               (This would be punched on card, not at 1000.)
+LOAD    IN      16(16)          Read second part of loading routine.
+READ    IN      32(16)          Read a card to the buffer area.
+        LD1     0
+        JBUS    3(16)           Wait for reading to finish.
+        LDA     33
+        SLA     1               (This is at location 0005.)
+        SRAX    6               rAX <- columns 7-10.
+        NUM     30              (This is at location 0007.)
+        STA     0               Store start address at location 29
+        LDA     33(1:1)         rA <- number of words to read ...
+        SUB     7(0:2)              ... subtracting 30 to get numeric
+LOOP    LD2     0               rI2 <- start address. (Location 0011.)
+        JAZ     0,2             Jump there if rA = 0 (i.e. transfer card)
+        STA     32              Start of buffer holds number of words to read.
+        LDA     0               rA <- start address.
+        ADD     5(0:2)          rA <- rA + 1.
+        STA     0               Increment location.
+        LDA     35,1(5:5)       Get last digit of word.
+        SUB     22(0:2)         Subtract 25 to determine if negative.
+        STA     0,2(0:0)        Store just the sign.
+        LDA     34,1            Load the word.
+        LDX     35,1
+        NUM     25              (This is location 0022.)
+        STA     0,2(1:5)        Store rest of word.
+        INC1    2               Tricky way to do rI1 <- rI1 + 2.
+        LDA     0
+        SUB     5(0:2)          Decrement words left to read.
+        JAP     11              LOOP again.
+        JMP     1               READ a new card.
+
+        ORIG    3500
+START   IN      0(CARDRD)       A single card is read into 0000-0015
+        JBUS    *(CARDRD)
+        STJ     0
+        JSJ     1
+
+TEST    OUT     0(PRINTER)
+        JBUS    *(PRINTER)
+        OUT     16(PRINTER)
+        JBUS    *(PRINTER)
+        STJ     0
+        JSJ     1
+        HLT
+        END     TEST
