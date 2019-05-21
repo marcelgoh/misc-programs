@@ -1,0 +1,39 @@
+* Binary search
+
+* DATA:
+E       EQU     9
+N       EQU     8
+X       CON     1
+        CON     3
+        CON     4
+        CON     7
+        CON     9
+        CON     12
+        CON     16
+        CON     23
+* CODE:
+        ORIG    3000
+INIT    ENT1    0               rI1 <- low.
+        ENT2    N-1             rI2 <- high.
+1H      ENTA    0,2             rA <- rI2.
+        ST1     TEMP
+        ADD     TEMP            rA <- rA + rI1.
+        SRAX    5
+        DIV     =2=             rA <- rA / 2.
+        STA     TEMP
+        LD3     TEMP            rI3 <- (high + low) / 2.
+        LDA     X,3             rA <- X[rI3].
+        CMPA    =E=             Exit if X[rI3] = E.
+        JE      FOUND
+        ENTA    0,2             rA <- high.
+        ST1     TEMP
+        SUB     TEMP            rA <- high - low.
+        JAZ     FAIL            If high = low, fail.
+        JL      2F
+        ENT2    -1,3            high <- rI3 - 1.
+        JMP     1B
+2H      ENT1    1,3             low <- rI3 + 1.
+        JMP     1B
+FAIL    ENT3    -1
+FOUND   HLT
+        END     INIT
