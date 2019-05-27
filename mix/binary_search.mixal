@@ -1,7 +1,7 @@
 * Binary search
 
 * DATA:
-E       EQU     9
+E       EQU     3000
 N       EQU     8
 X       CON     1
         CON     3
@@ -10,7 +10,7 @@ X       CON     1
         CON     9
         CON     12
         CON     16
-        CON     23
+        CON     3000
 * CODE:
         ORIG    3000
 INIT    ENT1    0               rI1 <- low.

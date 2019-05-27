@@ -1,0 +1,22 @@
+* Comparing two numbers without any jumps.
+* Uses that min(a, b) = (a + b - abs(a - b)) / 2
+
+* DATA:
+A       CON     12
+B       CON     34
+C       CON     0
+
+* CODE:
+START   ORIG    3000
+        LDA     A
+        SUB     B               rA <- a - b.
+        STA     C(1:5)          C <- abs(a - b).
+        LDA     A
+        ADD     B               rA <- a + b.
+        SUB     C               rA <- a + b - abs(a - b).
+        SRAX    5
+        DIV     =2=             rA <- (a + b - abs(a - b)) / 2.
+        STA     C
+        HLT
+        END     START
+
