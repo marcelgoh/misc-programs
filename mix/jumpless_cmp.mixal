@@ -2,11 +2,11 @@
 * Uses that min(a, b) = (a + b - abs(a - b)) / 2
 
 * DATA:
-A       CON     12
-B       CON     34
+A       CON     1073741822
+B       CON     1073741823
 C       CON     0
 
-* CODE:
+* CODE: Warning! -- doesn't take care of overflows
 START   ORIG    3000
         LDA     A
         SUB     B               rA <- a - b.
@@ -18,5 +18,38 @@ START   ORIG    3000
         DIV     =2=             rA <- (a + b - abs(a - b)) / 2.
         STA     C
         HLT
-        END     START
+* Better answer, which does not allow overflows to happen.
+BETTER  LDA     A
+        SRAX    5
+        DIV     =2=
+        STA     A1
+        STX     A2              A = 2 * HALFA + REMA
+        LDA     B
+        SRAX    5
+        DIV     =2=
+        STA     B1
+        STX     B2              B = 2 * HALFB + REMB
+        LDA     A1
+        SUB     B1
+        STA     AB1             A1 <- HALFA - HALFB.
+        LDA     A2
+        SUB     B2
+        STA     AB2             REMDIF <- REMA - REMB.
+        SRAX    1
+        ADD     AB1
+        ENTX    1
+        SLAX    5
+        MUL     AB2
+        STX     AB3             REMDIF with sign of (a - b)
+        LDA     A2
+        ADD     B2
+        SUB     AB3
+        SRAX    5
+        DIV     =2=             rA <- SREMDIF / 2.
+        ADD     A1              rA <- rA + HALFA.
+        ADD     B1              rA <- rA + HALFB.
+        SUB     AB1(1:5)         rA <- rA - abs(A1).
+        STA     C
+        HLT
+        END     BETTER
 
