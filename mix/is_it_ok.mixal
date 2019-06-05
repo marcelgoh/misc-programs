@@ -1,0 +1,63 @@
+* Tells you whether or not it is OK
+
+* DATA: For convenience, I'm using a lot of space.
+TERM    EQU     19
+        ORIG    0
+WELCOME ALF     "(IS I"
+        ALF     "T OK)"
+        ORIG    15
+YOUMSG  ALF     "ENTER"
+        ALF     " YOUR"
+        ALF     " AGE "
+        ALF     "(2 DI"
+        ALF     "GITS)"
+        ORIG    30
+THEMMSG ALF     "ENTER"
+        ALF     " THEI"
+        ALF     "R AGE"
+        ALF     " (2 D"
+        ALF     "IGITS"
+        ALF     ")    "
+        ORIG    45
+OK      ALF     "OK.  "
+        ORIG    60
+EWW     ALF     "EWW. "
+INBUF   EQU     75
+
+* CODE:
+        ORIG    3000
+START   OUT     WELCOME(TERM)           Print welcome message.
+        OUT     YOUMSG(TERM)            Ask for user's age.
+        IN      INBUF(TERM)
+        ENTA    0
+        LDX     INBUF
+        SRAX    3
+        NUM
+        STA     MAX                     MAX holds user's age.
+        OUT     THEMMSG(TERM)           Ask for their age.
+        IN      INBUF(TERM)
+        ENTA    0
+        LDX     INBUF
+        SRAX    3
+        NUM     0                       rA holds their age.
+        CMPA    MAX                     Compare their age to user's.
+        JLE     1F
+        LDX     MAX                     If rA > MAX,                    
+        STA     MAX                         Exchange rA and MAX.
+        SLAX    5
+1H      DECA    7                       rA is the smaller age. Decrement by 7.
+        STA     TEMP
+        ADD     TEMP                    rA <- rA * 2.
+        CMPA    MAX                     Compare to MAX.
+        JL      1F                      If greater or equal,
+        OUT     OK(TERM)                    print OK message and halt.
+        HLT
+1H      OUT     EWW(TERM)               Else, print EWW message and halt.
+        HLT
+MAX     CON     0
+TEMP    CON     0
+        END     START
+* To avoid warnings
+
+
+
