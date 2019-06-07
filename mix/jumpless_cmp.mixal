@@ -48,7 +48,7 @@ BETTER  LDA     A
         DIV     =2=             rA <- SREMDIF / 2.
         ADD     A1              rA <- rA + HALFA.
         ADD     B1              rA <- rA + HALFB.
-        SUB     AB1(1:5)         rA <- rA - abs(A1).
+        SUB     AB1(1:5)        rA <- rA - abs(A1).
         STA     C
         HLT
         END     BETTER

@@ -54,10 +54,10 @@ START   OUT     WELCOME(TERM)           Print welcome message.
         HLT
 1H      OUT     EWW(TERM)               Else, print EWW message and halt.
         HLT
+* To avoid warnings
 MAX     CON     0
 TEMP    CON     0
         END     START
-* To avoid warnings
 
 
 
