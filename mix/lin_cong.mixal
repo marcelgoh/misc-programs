@@ -1,0 +1,33 @@
+* Gets the next random number of a linear congruential sequence
+* DATA:
+TERM    EQU     19
+BUF1    EQU     0
+        ORIG    2000
+XRAND   CON     456
+A       CON     101             101 - 1 = 100 is divisible by 4.
+C       CON     78903297        Relatively prime to 2^30
+* CODE:
+        ORIG    3000
+* Calling sequence: JMP RANDM
+* Entry conditions: Location XRAND contains integer X
+* Exit conditions:  X <- rA <- (aX + c) mod w, rX <- 0, overflow off
+RANDM   STJ     9F              Store return address.
+        LDA     A
+        MUL     XRAND
+        SLAX    5               rA <- rAX mod w.
+        ADD     C               rA <- rA + c. (Overflow might be on.)
+        STA     XRAND           Update XRAND.
+        JOV     *+1             Toggle overflow if on.
+9H      JMP     *               Return to caller.
+* Entry point
+START   ENT2    30              Number of loops.
+1H      JMP     RANDM
+        CHAR    0               rAX <- CHAR(rA).
+        STA     BUF1
+        STX     BUF1+1
+        OUT     BUF1(TERM)      Print number in sequence.
+        DEC2    1
+        J2NN    1B
+        HLT
+        END     START
+
