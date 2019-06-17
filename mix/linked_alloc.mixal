@@ -91,6 +91,26 @@ PRINT   STJ     TNIRP
 PRINTLN OUT     BUF(TERM)
 TNIRP   JMP     *
 
+* Calling sequence:     JMP REVERSE     Jump to subroutine.
+*                       NOP T           Location of pointer to list
+* Exit conditions:      The items of the list now appear in the opposite order.
+* Registers used:       rI1 = CURR, rI2 = LAST, rI3 = NEXT, rI4 = T.
+REVERSE STJ     ESREVER
+        STJ     *+1
+        ENT4    *
+        LD4     0,4(0:2)        rI4 <- T.
+        LD1     0,4(LINK)       CURR points to head of list.
+        J1Z     ESREVER         If list is empty, exit.
+        ENT2    0               Initialise LAST to NULL.
+1H      LD3     0,1(LINK)       NEXT <- LINK(CURR).
+        ST2     0,1(LINK)       LINK(CURR) <- LAST.
+        ENT2    0,1             LAST <- CURR.
+        J3Z     2F              If NEXT = NULL, exit loop.
+        ENT1    0,3             Set CURR <- NEXT and repeat.
+        JMP     1B
+2H      ST2     0,4(LINK)       Set LINK(T) <- CURR.
+ESREVER JMP     *
+
 * Main entry point of program
 STACK   CON     0
 START   JMP     LINKSTK
@@ -100,18 +120,17 @@ START   JMP     LINKSTK
         LDA     =4=
         JMP     INSERT
         NOP     STACK
-
-*       Test delete
-        ENTA    0
-        JMP     DELETE
-        NOP     STACK
-        JMP     UNDRFLW
-
         LDA     =11=
+        JMP     INSERT
+        NOP     STACK
+        LDA     =118=
         JMP     INSERT
         NOP     STACK
         JMP     PRINT
         NOP     STACK
-        LDA     STACK
+        JMP     REVERSE         Test REVERSE
+        NOP     STACK
+        JMP     PRINT
+        NOP     STACK
         HLT
         END     START

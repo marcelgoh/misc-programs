@@ -12,12 +12,13 @@ The following programs are solutions to exercises in _The Art of Computer Progra
 + (§1.3.2-14) [Dates of Easter](easter.mixal) &mdash; printed [output](dev/easter_1951_2050.txt)
 + (§1.3.2-21) [Magic square](magic_square.mixal) &mdash; printed [output](dev/magic_square_23_23.txt)
 
-### Chapter 3
-+ (§3.2.1.1-2) [Linear congruential sequence](lin_cong.mixal)
-
 ### Chapter 2
 + (§2.2.3-2) [Linked list insertion](linked_alloc.mixal) (at location `INSERT`)
 + (§2.2.3-3) [Linked list deletion](linked_alloc.mixal) (at location `DELETE`)
++ (§2.2.3-8) [Reverse a linked list](linked_alloc.mixal) (at location `REVERSE`)
+
+### Chapter 3
++ (§3.2.1.1-2) [Linear congruential sequence](lin_cong.mixal)
 
 ### Chapter 5
 + (§5-8) [Find minimum without jump](jumpless_cmp.mixal)
