@@ -18,7 +18,7 @@ The following programs are solutions to exercises in _The Art of Computer Progra
 + (§2.2.3-8) [Reverse a linked list](linked_alloc.mixal) (at location `REVERSE`)
 
 ### Chapter 3
-+ (§3.2.1.1-2) [Linear congruential sequence](lin_cong.mixal)
++ (§3.2.1.1-2) [Linear congruential sequence](tictactoe.mixal) (at location `RANDM`)
 
 ### Chapter 5
 + (§5-8) [Find minimum without jump](jumpless_cmp.mixal)

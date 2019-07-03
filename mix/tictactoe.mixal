@@ -1,0 +1,160 @@
+* Tic-tac-toe program
+
+* CONSTANTS AND ADDRESSES:
+TERM    EQU     19
+BOARD   EQU     0
+INBUF   EQU     100
+OUTBUF1 EQU     115
+OUTBUF2 EQU     130
+NAME    EQU     145
+
+* DATA:
+        ORIG    200
+NAMEMSG ALF     "ENTER"
+        ALF     " YOUR"
+        ALF     " NAME"
+        ORIG    215
+SIZEMSG ALF     "ENTER"
+        ALF     " SIZE"
+        ALF     " OF B"
+        ALF     "OARD "
+        ALF     "(MIN "
+        ALF     "3, MA"
+        ALF     "X 9) "
+        ORIG    230
+ERRMSG1 ALF     "BAD I"
+        ALF     "NPUT,"
+        ALF     " PROG"
+        ALF     "RAM H"
+        ALF     "ALTED"
+        ALF     ".    "
+        ORIG    245
+XRAND   CON     0               Used to generate random sequences.
+ARAND   CON     101
+CRAND   CON     78903297
+DIM     CON     0               Dimension of board
+BORDER3 ALF     "012  "         Labels for top border of board.
+BORDER4 ALF     "0123 "
+BORDER5 ALF     "01234"
+BORDER6 ALF     "5    "
+BORDER7 ALF     "56   "
+BORDER8 ALF     "567  "
+BORDER9 ALF     "5678 "
+        CON     0
+TEMP    CON     0
+
+* CODE:
+        ORIG    3000
+* Calling sequence: JMP BADIN
+* Prints error message and halts
+BADIN   OUT     ERRMSG1(TERM)
+        HLT
+
+* Calling sequence: JMP CLRBUF
+*                   NOP BUFPTR
+* Entry conditions: BUFPTR points to a 15-word buffer.
+* Exit conditions: The buffer is cleared to 0, rX, rI1, rI2 affected.
+CLRBUF  STJ     9F
+        STJ     *+1
+        LD1     *(0:2)          rI1 <- STRPTR.
+        ENT2    15
+        ENTX    0
+1H      STX     0,1             Loop 15 times and clear each word.
+        INC1    1
+        DEC2    1
+        J2P     1B
+9H      JMP     *               Return to caller.
+
+* Calling sequence: JMP RANDM
+* Entry conditions: Location XRAND contains integer X.
+* Exit conditions: X <- rA <- (aX + c) mod w, rX <- 0, overflow off.
+RANDM   STJ     9F
+        LDA     ARAND
+        MUL     XRAND
+        SLAX    5               rA <- rAX mod w.
+        ADD     CRAND           rA <- rA + c. (Overflow may be on.)
+        STA     XRAND           Update XRAND.
+        JOV     *+1             Toggle overflow if on.
+9H      JMP     *               Return to caller.
+
+* Calling sequence: JMP STRLEN
+*                   NOP STRPTR
+* Entry conditions: STRPTR points to string
+* Exit conditions: rI2 is number of consecutive leading non-zero characters,
+*                  rX, rI1 also affected.
+STRLEN  STJ     9F
+        STJ     *+1
+        LD1     *(0:2)          rI1 <- STRPTR.
+        ENT2    0               Initialise rI2 to 0.
+1H      LDX     0,1(1:1)        Check if each of five letters in word
+        JXZ     9F                  is non-zero, exit loop at first zero
+        INC2    1                   found.
+        LDX     0,1(2:2)
+        JXZ     9F
+        INC2    1
+        LDX     0,1(3:3)
+        JXZ     9F
+        INC2    1
+        LDX     0,1(4:4)
+        JXZ     9F
+        INC2    1
+        LDX     0,1(5:5)
+        JXZ     9F
+        INC2    1
+        INC1    1               Increment string pointer and loop.
+        JMP     1B
+9H      JMP     *               Return to caller.
+
+* Calling sequence: JMP PBOARD
+* Entry conditions: BOARD contains board of dimension DIM.
+* Exit conditions: Board printed to terminal, OUTBUF1 affected.
+*                  Registers used: rA, rX
+PBOARD  STJ     9F
+        LDA     DIM
+        CMPA    =5=
+        LDX     BORDER5
+        STX     OUTBUF1+1
+1H      NOP
+9H      JMP     *
+
+* Calling sequence: JMP GETNUM
+* Entry conditions: None
+* Exit conditions: rA holds 1-digit number input by user (0 to 9).
+*                  rX, TEMP memory cell also affected
+GETNUM  STJ     9F
+        IN      INBUF(TERM)
+        LDA     31
+        SLA     4
+        STA     TEMP            TEMP contains + 31 00 00 00 00
+        LDA     INBUF
+        SRAX    5
+        DIV     TEMP
+        JXNZ    BADIN           Ensure input has at most one digit.
+        LDA     INBUF
+        JAZ     BADIN           Ensure input has at least one digit.
+        SRAX    9
+        NUM     
+9H      JMP     *               Return to caller.
+
+* Main entry point
+MAIN    OUT     NAMEMSG(TERM)
+        IN      NAME(TERM)
+        LDA     NAME            Use first five letters of player's name
+        JANZ    1F                  as seed for RAND, unless zero.
+        JMP     BADIN
+1H      STA     XRAND
+        JMP     STRLEN          rI2 <- length of NAME
+        NOP     NAME
+        ST2     TEMP
+1H      JMP     RANDM           Call RANDM once for every letter in
+        DEC2    1                   player's name.
+        J2P     1B
+        OUT     SIZEMSG(TERM)   Ask user for dimension size.
+        JMP     GETNUM          rA <- 1-digit number from user.
+        CMPA    3               Ensure input is between 3 and 9, inclusive.
+        JL      BADIN
+        CMPA    9
+        JG      BADIN
+        STA     DIM             DIM <- rA, the dimension of the board.
+        HLT
+        END     MAIN
