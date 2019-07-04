@@ -29,6 +29,11 @@ ERRMSG1 ALF     "BAD I"
         ALF     "ALTED"
         ALF     ".    "
         ORIG    245
+ERRMSG2 ALF     "ERROR"
+        ALF     " PRIN"
+        ALF     "ING B"
+        ALF     "OARD."
+        ORIG    260
 XRAND   CON     0               Used to generate random sequences.
 ARAND   CON     101
 CRAND   CON     78903297
@@ -36,30 +41,27 @@ DIM     CON     0               Dimension of board
 BORDER3 ALF     "012  "         Labels for top border of board.
 BORDER4 ALF     "0123 "
 BORDER5 ALF     "01234"
-BORDER6 ALF     "5    "
-BORDER7 ALF     "56   "
-BORDER8 ALF     "567  "
-BORDER9 ALF     "5678 "
+HORDIV  ALF     "+++++"
         CON     0
 TEMP    CON     0
 
 * CODE:
         ORIG    3000
-* Calling sequence: JMP BADIN
-* Prints error message and halts
+* Print various error messages.
 BADIN   OUT     ERRMSG1(TERM)
+        HLT
+BADPRNT OUT     ERRMSG2(TERM)
         HLT
 
 * Calling sequence: JMP CLRBUF
 *                   NOP BUFPTR
 * Entry conditions: BUFPTR points to a 15-word buffer.
-* Exit conditions: The buffer is cleared to 0, rX, rI1, rI2 affected.
+* Exit conditions: The buffer is cleared to 0, rI1, rI2 affected.
 CLRBUF  STJ     9F
         STJ     *+1
         LD1     *(0:2)          rI1 <- STRPTR.
         ENT2    15
-        ENTX    0
-1H      STX     0,1             Loop 15 times and clear each word.
+1H      STZ     0,1             Loop 15 times and clear each word.
         INC1    1
         DEC2    1
         J2P     1B
@@ -105,23 +107,112 @@ STRLEN  STJ     9F
         JMP     1B
 9H      JMP     *               Return to caller.
 
+* Calling sequence: JMP PTWOCHR
+*                   NOP CHARS
+* Entry conditions: rI1 points to a word in buffer,
+*                   rI2 (in the range 1-5) indicates where to add chars,
+*                   CHARS(1:1) and CHARS(2:2) are the two chars to print.
+* Exit conditions: rI2 incremented by 2 (cycling in the range 1-5),
+*                  If rI2 holds 4 or 5, then rI1 increments by 1,
+*                  rI3 also affected.
+PTWOCHR STJ     9F
+        STJ     *+1
+        LD3     *(0:2)          rI3 <- CHARS.
+        LD4     0,3(2:2)        rI4 <- second char to print.
+        LD3     0,3(1:1)        rI3 <- first char to print.
+* Case-match on rI2:
+        CMP2    =1=             Case rI2 = 1.
+        JNE     1F
+        ST3     0,1(1:1)
+        ST4     0,1(2:2)
+        JMP     8F
+1H      CMP2    =2=             Case rI2 = 2.
+        JNE     1F
+        ST3     0,1(2:2)
+        ST4     0,1(3:3)
+        JMP     8F
+1H      CMP2    =3=             Case rI2 = 3.
+        JNE     1F
+        ST3     0,1(3:3)
+        ST4     0,1(4:4)
+        JMP     8F
+1H      CMP2    =4=             Case rI2 = 4.
+        JNE     1F
+        ST3     0,1(4:4)
+        ST4     0,1(5:5)
+        INC1    1               Increment rI1 by one.
+        DEC2    5               rI2 <- -1 (for cycle).
+        JMP     8F
+1H      CMP2    =5=             Case rI2 = 5.
+        JNE     1F
+        ST3     0,1(5:5)
+        INC1    1               Increment rI1 by one.
+        DEC2    5               rI2 <- 0 (for cycle).
+        ST4     0,1(1:1)        (In the next memory cell.)
+        JMP     8F
+1H      JMP     BADPRNT         No case matched.
+8H      INC2    2               rI2 <- rI2 + 2.
+9H      JMP     *               Return to caller.
+
 * Calling sequence: JMP PBOARD
 * Entry conditions: BOARD contains board of dimension DIM.
-* Exit conditions: Board printed to terminal, OUTBUF1 affected.
-*                  Registers used: rA, rX
+* Exit conditions: Board printed to terminal, OUTBUF1, TEMP affected.
+*                  Registers used: rA, rX, rI2, rI3.
 PBOARD  STJ     9F
-        LDA     DIM
-        CMPA    =5=
-        LDX     BORDER5
+* Print top border
+        JMP     CLRBUF          Clear OUTBUF1.
+        NOP     OUTBUF1
+        ENT2    44              rI2 <- '+'.
+        ST2     OUTBUF1(5:5)    First block is "    +"
+        LDA     DIM             rA <- DIM.
+        CMPA    =5=             Check for cases of first block.
+        JGE     2F
+        CMPA    =3=
+        JNE     3F
+        LDX     BORDER3         Case DIM = 3:
+        STX     OUTBUF1+1           First block is "012  " and
+        JMP     8F                  no second block.
+3H      LDX     BORDER4         Case DIM = 4:
+        STX     OUTBUF1+1           First block is "0123 " and
+        JMP     8F                  no second block.
+2H      LDX     BORDER5         If DIM >= 5:
+        STX     OUTBUF1+1           First block is "01234".
+        LD2     DIM             If DIM = 5:
+        DEC2    5
+        J2Z     8F                  Jump to print, no need for second block.
+        STZ     TEMP            Clear TEMP memory.
+        ENT3    35              r3 <- '5'.
+        ST3     TEMP(1:1)       Append '5' to TEMP.
+        DEC2    1
+        J2Z     7F              Jump if DIM = 6.
+        INC3    1
+        ST3     TEMP(2:2)       Append '6' to TEMP.
+        DEC2    1
+        J2Z     7F              Jump if DIM = 7.
+        INC3    1
+        ST3     TEMP(3:3)       Append '7' to TEMP.
+        DEC2    1
+        J2Z     7F              Jump if DIM = 8.
+        INC3    1
+        ST3     TEMP(4:4)       Append '8' to TEMP.
+7H      LDX     TEMP
+        STX     OUTBUF1+2       Add second block to buffer.
+8H      OUT     OUTBUF1(TERM)   Print buffer.
+* Print horizontal divider
+        LDX     HORDIV
+        STX     OUTBUF1
         STX     OUTBUF1+1
-1H      NOP
-9H      JMP     *
+        STX     OUTBUF1+2
+        OUT     OUTBUF1(TERM)
+9H      JMP     *               Return to caller.
 
 * Calling sequence: JMP GETNUM
 * Entry conditions: None
 * Exit conditions: rA holds 1-digit number input by user (0 to 9).
 *                  rX, TEMP memory cell also affected
 GETNUM  STJ     9F
+        JMP     CLRBUF          Clear input buffer.
+        NOP     INBUF
         IN      INBUF(TERM)
         LDA     31
         SLA     4
@@ -151,10 +242,11 @@ MAIN    OUT     NAMEMSG(TERM)
         J2P     1B
         OUT     SIZEMSG(TERM)   Ask user for dimension size.
         JMP     GETNUM          rA <- 1-digit number from user.
-        CMPA    3               Ensure input is between 3 and 9, inclusive.
+        CMPA    =3=             Ensure input is between 3 and 9, inclusive.
         JL      BADIN
-        CMPA    9
+        CMPA    =9=
         JG      BADIN
         STA     DIM             DIM <- rA, the dimension of the board.
+        JMP     PBOARD
         HLT
         END     MAIN
