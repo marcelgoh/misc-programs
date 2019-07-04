@@ -34,14 +34,23 @@ ERRMSG2 ALF     "ERROR"
         ALF     "ING B"
         ALF     "OARD."
         ORIG    260
+RANDMSG ALF     "ENTER"
+        ALF     " SEED"
+        ALF     " FOR "
+        ALF     "RANDO"
+        ALF     "MISAT"
+        ALF     "ION ("
+        ALF     "0 TO "
+        ALF     "9)   "
+        ORIG    275
 XRAND   CON     0               Used to generate random sequences.
 ARAND   CON     101
 CRAND   CON     78903297
 DIM     CON     0               Dimension of board
-BORDER3 ALF     "012  "         Labels for top border of board.
-BORDER4 ALF     "0123 "
-BORDER5 ALF     "01234"
-HORDIV  ALF     "+++++"
+HORDIV  ALF     "-+   "         Used to print to terminal.
+BCELL   ALF     " :   "
+XCELL   ALF     "X:   "
+OCELL   ALF     "O:   "
         CON     0
 TEMP    CON     0
 
@@ -112,9 +121,9 @@ STRLEN  STJ     9F
 * Entry conditions: rI1 points to a word in buffer,
 *                   rI2 (in the range 1-5) indicates where to add chars,
 *                   CHARS(1:1) and CHARS(2:2) are the two chars to print.
-* Exit conditions: rI2 incremented by 2 (cycling in the range 1-5),
-*                  If rI2 holds 4 or 5, then rI1 increments by 1,
-*                  rI3 also affected.
+* Exit conditions: rI2 incremented by 2 (cycling in the range 1-5);
+*                  if rI2 holds 4 or 5, then rI1 increments by 1;
+*                  rI3, rI4 also affected.
 PTWOCHR STJ     9F
         STJ     *+1
         LD3     *(0:2)          rI3 <- CHARS.
@@ -154,56 +163,61 @@ PTWOCHR STJ     9F
 8H      INC2    2               rI2 <- rI2 + 2.
 9H      JMP     *               Return to caller.
 
-* Calling sequence: JMP PBOARD
-* Entry conditions: BOARD contains board of dimension DIM.
-* Exit conditions: Board printed to terminal, OUTBUF1, TEMP affected.
-*                  Registers used: rA, rX, rI2, rI3.
-PBOARD  STJ     9F
-* Print top border
+* Calling sequence: JMP PBORDER
+* Entry conditions: Location DIM contains dimension of board,
+*                   location HORDIV contains "-+   ".
+* Exit conditions: Horizontal divider printed to screen.
+*                  OUTBUF1 affected.
+*                  Registers affected: rA, rI1, rI2, rI3, rI4.
+PBORDER STJ     9F
         JMP     CLRBUF          Clear OUTBUF1.
         NOP     OUTBUF1
         ENT2    44              rI2 <- '+'.
-        ST2     OUTBUF1(5:5)    First block is "    +"
-        LDA     DIM             rA <- DIM.
-        CMPA    =5=             Check for cases of first block.
-        JGE     2F
-        CMPA    =3=
-        JNE     3F
-        LDX     BORDER3         Case DIM = 3:
-        STX     OUTBUF1+1           First block is "012  " and
-        JMP     8F                  no second block.
-3H      LDX     BORDER4         Case DIM = 4:
-        STX     OUTBUF1+1           First block is "0123 " and
-        JMP     8F                  no second block.
-2H      LDX     BORDER5         If DIM >= 5:
-        STX     OUTBUF1+1           First block is "01234".
-        LD2     DIM             If DIM = 5:
-        DEC2    5
-        J2Z     8F                  Jump to print, no need for second block.
-        STZ     TEMP            Clear TEMP memory.
-        ENT3    35              r3 <- '5'.
-        ST3     TEMP(1:1)       Append '5' to TEMP.
-        DEC2    1
-        J2Z     7F              Jump if DIM = 6.
-        INC3    1
-        ST3     TEMP(2:2)       Append '6' to TEMP.
-        DEC2    1
-        J2Z     7F              Jump if DIM = 7.
-        INC3    1
-        ST3     TEMP(3:3)       Append '7' to TEMP.
-        DEC2    1
-        J2Z     7F              Jump if DIM = 8.
-        INC3    1
-        ST3     TEMP(4:4)       Append '8' to TEMP.
-7H      LDX     TEMP
-        STX     OUTBUF1+2       Add second block to buffer.
-8H      OUT     OUTBUF1(TERM)   Print buffer.
-* Print horizontal divider
-        LDX     HORDIV
-        STX     OUTBUF1
-        STX     OUTBUF1+1
-        STX     OUTBUF1+2
-        OUT     OUTBUF1(TERM)
+        ST2     OUTBUF1(1:1)    Add '+' to first block of buffer.
+        ENT1    OUTBUF1         rI1 points to first block of buffer.
+        ENT2    2               rI2 <- 2.
+        LDA     DIM             rA <- *DIM.
+1H      JMP     PTWOCHR         Do:
+        NOP     HORDIV              Add "-+" to buffer.
+        DECA    1
+        JANZ    1B              While rA > 0.
+        OUT     OUTBUF1(TERM)   Print the buffer to terminal.
+9H      JMP     *               Return to caller.
+
+* Calling sequence: JMP PBOARD
+* Entry conditions: BOARD contains board of dimension DIM.
+* Exit conditions: Board printed to terminal, OUTBUF1 affected.
+*                  All registers used.
+PBOARD  STJ     9F
+* Print top border
+        JMP     PBORDER         Print top border.
+        LDX     DIM             rX <- *DIM.
+        ENT5    BOARD           rI5 is the board pointer.
+1H      JMP     CLRBUF          Do:
+        NOP     OUTBUF1             Clear buffer.
+        ENT1    54
+        ST1     OUTBUF1(1:1)        Add ':' to buffer.
+        ENT1    OUTBUF1             rI1 <- OUTBUF.
+        ENT2    2                   rI2 <- 2.
+        LD6     DIM                 Set rI6 <- *DIM.
+2H      DEC6    1                   Do: decrement rI6 by one.
+        LDA     0,5                     rA <- next value of array.
+        INC5    1                       Increment rI5 by one.
+        JAP     4F                      Branch on sign of rA.
+        JAN     3F
+        JMP     PTWOCHR                 If rA = 0, then
+        NOP     BCELL                       Add blank cell to buffer.
+        JMP     5F
+3H      JMP     PTWOCHR                 If rA is negative, then
+        NOP     OCELL                       Add "O"-cell to buffer.
+        JMP     5F
+4H      JMP     PTWOCHR                 If rA is positive, then
+        NOP     XCELL                       Add "X"-cell to buffer.
+5H      J6P     2B                  While rI6 > 0.
+        OUT     OUTBUF1(TERM)       Output buffer to terminal.
+        JMP     PBORDER             Print a horizontal border.
+        DECX    1                   Decrement rX by one.
+        JXP     1B              While rX > 0.
 9H      JMP     *               Return to caller.
 
 * Calling sequence: JMP GETNUM
@@ -231,7 +245,7 @@ GETNUM  STJ     9F
 MAIN    OUT     NAMEMSG(TERM)
         IN      NAME(TERM)
         LDA     NAME            Use first five letters of player's name
-        JANZ    1F                  as seed for RAND, unless zero.
+        JANZ    1F                  as initial seed for RAND, unless zero.
         JMP     BADIN
 1H      STA     XRAND
         JMP     STRLEN          rI2 <- length of NAME
@@ -240,13 +254,25 @@ MAIN    OUT     NAMEMSG(TERM)
 1H      JMP     RANDM           Call RANDM once for every letter in
         DEC2    1                   player's name.
         J2P     1B
-        OUT     SIZEMSG(TERM)   Ask user for dimension size.
+        OUT     RANDMSG(TERM)
+        JMP     GETNUM
+        STA     TEMP
+        LD2     TEMP            rI2 <- 1-digit number from user.
+1H      J2NP    2F
+        JMP     RANDM           Call RANDM rI2 times.
+        DEC2    1
+        JMP     1B
+2H      OUT     SIZEMSG(TERM)   Ask user for dimension size.
         JMP     GETNUM          rA <- 1-digit number from user.
         CMPA    =3=             Ensure input is between 3 and 9, inclusive.
         JL      BADIN
         CMPA    =9=
         JG      BADIN
         STA     DIM             DIM <- rA, the dimension of the board.
+        ENT1    -1
+        ENT2    1
+        ST1     BOARD+4
+        ST2     BOARD+5
         JMP     PBOARD
         HLT
         END     MAIN
