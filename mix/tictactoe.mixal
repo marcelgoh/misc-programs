@@ -1,4 +1,5 @@
-* Tic-tac-toe program
+* Tic-tac-toe program.
+* Written by Marcel Goh from 3 to ? July 2019
 
 * CONSTANTS AND ADDRESSES:
 TERM    EQU     19
@@ -22,14 +23,10 @@ SIZEMSG ALF     "ENTER"
         ALF     "3, MA"
         ALF     "X 9) "
         ORIG    230
-ERRMSG1 ALF     "BAD I"
-        ALF     "NPUT,"
-        ALF     " PROG"
-        ALF     "RAM H"
-        ALF     "ALTED"
-        ALF     ".    "
+BADIN   ALF     "BAD I"
+        ALF     "NPUT."
         ORIG    245
-ERRMSG2 ALF     "ERROR"
+ERRMSG1 ALF     "ERROR"
         ALF     " PRIN"
         ALF     "ING B"
         ALF     "OARD."
@@ -43,23 +40,50 @@ RANDMSG ALF     "ENTER"
         ALF     "0 TO "
         ALF     "9)   "
         ORIG    275
+ROWMSG  ALF     "ENTER"
+        ALF     " ROW "
+        ALF     "(0 TO"
+ROW1    ALF     " @)  "
+        ORIG    290
+COLMSG  ALF     "ENTER"
+        ALF     " COLU"
+        ALF     "MN (0"
+COL1    ALF     " TO @"
+        ALF     ")    "
+        ORIG    305
+ADVRSRY ALF     "ADVER"
+        ALF     "SARY:"
+        ORIG    320
+ADVRMSG ALF     "THE A"
+        ALF     "DVERS"
+        ALF     "ARY M"
+        ALF     "ADE H"
+        ALF     "IS MO"
+        ALF     "VE.  "
+        ORIG    335
+WINMSG  ALF     "YOU W"
+        ALF     "IN :)"
+        ORIG    350
+LOSEMSG ALF     "YOU L"
+        ALF     "OSE  "
+        ORIG    365
 XRAND   CON     0               Used to generate random sequences.
 ARAND   CON     101
 CRAND   CON     78903297
 DIM     CON     0               Dimension of board
+ROW     CON     0               Input row
+COL     CON     0               Input column
+NAMELEN CON     0               Length of player's name
 HORDIV  ALF     "-+   "         Used to print to terminal.
 BCELL   ALF     " :   "
 XCELL   ALF     "X:   "
 OCELL   ALF     "O:   "
-        CON     0
 TEMP    CON     0
 
 * CODE:
         ORIG    3000
 * Print various error messages.
-BADIN   OUT     ERRMSG1(TERM)
-        HLT
-BADPRNT OUT     ERRMSG2(TERM)
+BADPRNT OUT     ERRMSG1(TERM)
         HLT
 
 * Calling sequence: JMP CLRBUF
@@ -114,6 +138,45 @@ STRLEN  STJ     9F
         INC2    1
         INC1    1               Increment string pointer and loop.
         JMP     1B
+9H      JMP     *               Return to caller.
+
+* Calling sequence: JMP INSCHR
+*                   NOP STRPTR
+*                   NOP CHARS
+* Entry conditions: STRPTR points to string, CHARS(2:2) a char to add,
+*                   rX a 0-index.
+* Exit conditions:  STRPTR[rX] <- CHARS(2:2), TEMP affected.
+*                   rA, rI1, rI2 affected.
+INSCHR  STJ     9F
+        STJ     *+1
+        ENT1    *               rI1 points to "NOP STRPTR" cell.
+        LD2     1,1(0:2)        rI2 <- CHARS.
+        LD2     0,2(2:2)        rI2 <- CHARS(2:2).
+        LD1     0,1(0:2)        rI1 <- STRPTR.
+        ENTA    0
+        DIV     =5=             rA <- rX / 5, rX <- rX mod 5.
+        ST1     TEMP
+        ADD     TEMP            rA <- rA + rI1.
+        STA     TEMP
+        LD1     TEMP            rI1 <- rA.
+* Case-match on rX:
+        CMPX    =0=             Case rX = 0.
+        JNE     1F
+        ST2     0,1(1:1)
+        JMP     9F
+1H      CMPX    =1=             Case rX = 1.
+        JNE     1F
+        ST2     0,1(2:2)
+        JMP     9F
+1H      CMPX    =2=             Case rX = 2.
+        JNE     1F
+        ST2     0,1(3:3)
+        JMP     9F
+1H      CMPX    =3=             Case rX = 3.
+        JNE     1F
+        ST2     0,1(4:4)
+        JMP     9F
+1H      ST2     0,1(5:5)   Case rX = 4.
 9H      JMP     *               Return to caller.
 
 * Calling sequence: JMP PTWOCHR
@@ -221,24 +284,78 @@ PBOARD  STJ     9F
 9H      JMP     *               Return to caller.
 
 * Calling sequence: JMP GETNUM
+*                   NOP ERRJMP
 * Entry conditions: None
-* Exit conditions: rA holds 1-digit number input by user (0 to 9).
-*                  rX, TEMP memory cell also affected
+* Exit conditions: If input is invalid, exit is made to ERRJMP
+*                  rA holds 1-digit number input by user (0 to 9).
+*                  rX, rI1, rI2, rI3, TEMP memory cell also affected
 GETNUM  STJ     9F
+        STJ     *+1
+        LD3     *(0:2)          rI3 <- ERRJMP.
         JMP     CLRBUF          Clear input buffer.
         NOP     INBUF
         IN      INBUF(TERM)
-        LDA     31
-        SLA     4
-        STA     TEMP            TEMP contains + 31 00 00 00 00
-        LDA     INBUF
-        SRAX    5
-        DIV     TEMP
-        JXNZ    BADIN           Ensure input has at most one digit.
-        LDA     INBUF
-        JAZ     BADIN           Ensure input has at least one digit.
-        SRAX    9
+        ENTX    0
+        LDX     INBUF(2:5)
+        JXZ     1F              Ensure input has at most one digit.
+        OUT     BADIN(TERM)         If not then try again.
+        JMP     0,3
+1H      LDA     INBUF
+        JANZ    2F              Ensure input has at least one digit.
+        OUT     BADIN(TERM)         If not then try again.
+        JMP     0,3
+2H      SRAX    9
         NUM     
+9H      JMP     *               Return to caller.
+
+* Calling sequence: JMP GETPLYR
+* Entry conditions: BOARD points to a square board of dimension DIM,
+*                   with at least one empty cell.
+* Exit conditions: Cell of player's choice is filled with an "X".
+*                  Registers used: rA, rX, rI1, rI2, rI3.
+*                  Memory cells used: ROW, COL, DIM, TEMP.
+GETPLYR STJ     9F
+        OUT     NAME(TERM)      Print player's name.
+        JBUS    *(TERM)
+1H      OUT     COLMSG(TERM)
+        JMP     GETNUM          rA <- 1-digit number from user.
+        NOP     1B
+        CMPA    DIM
+        JL      2F              If rA >= DIM, then
+7H      OUT     BADIN(TERM)         print error message and try again.
+        JMP     1B
+2H      STA     COL             Save column.
+1H      OUT     ROWMSG(TERM)
+        JMP     GETNUM
+        NOP     1B
+        CMPA    DIM
+        JL      2F              Again, ensure rA < DIM.
+        OUT     BADIN(TERM)
+        JMP     1B
+2H      MUL     DIM             rAX <- DIM * ROW.
+        SLAX    5               rA <- rAX.
+        ADD     COL             rA <- rA + COL (the offset).
+        STA     TEMP
+        LD1     TEMP            rI1 <- rA (the correct cell).
+        LD3     BOARD,1
+        J3NZ    7B              If the cell is not blank, try again.
+        ENT2    1               Otherwise ...
+        ST2     BOARD,1             ... set *(BOARD + offset) <- 1.
+9H      JMP     *               Return to caller.
+
+* Calling sequence: JMP ROWSUM
+* Entry conditions: rA holds 0-index indicating row of BOARD.
+* Exit conditions: rA holds sum of row. rX, rI1, rI2 also affected.
+ROWSUM  STJ     9F
+        MUL     DIM             rX <- rA * DIM.
+        STX     TEMP
+        LD1     TEMP            rI1 <- rX.
+        LD2     DIM             rI2 <- *DIM.
+        ENTA    0               rA <- 0.
+1H      ADD     BOARD,1         Do: rA <- rA + BOARD[rI1].
+        DEC2    1                   Decrement rI2 by one.
+        INC1    1                   Increment rI1 by one.
+        J2P     1B              While rI2 > 0.
 9H      JMP     *               Return to caller.
 
 * Main entry point
@@ -246,16 +363,20 @@ MAIN    OUT     NAMEMSG(TERM)
         IN      NAME(TERM)
         LDA     NAME            Use first five letters of player's name
         JANZ    1F                  as initial seed for RAND, unless zero.
-        JMP     BADIN
+        OUT     BADIN(TERM)
+        JMP     MAIN            If input bad, try again.
 1H      STA     XRAND
-        JMP     STRLEN          rI2 <- length of NAME
+        JMP     STRLEN          rI2 <- length of NAME.
+        NOP     NAME
+        ST2     NAMELEN         *NAMELEN <- rI2.
         NOP     NAME
         ST2     TEMP
 1H      JMP     RANDM           Call RANDM once for every letter in
         DEC2    1                   player's name.
         J2P     1B
-        OUT     RANDMSG(TERM)
+1H      OUT     RANDMSG(TERM)
         JMP     GETNUM
+        NOP     1B
         STA     TEMP
         LD2     TEMP            rI2 <- 1-digit number from user.
 1H      J2NP    2F
@@ -264,15 +385,26 @@ MAIN    OUT     NAMEMSG(TERM)
         JMP     1B
 2H      OUT     SIZEMSG(TERM)   Ask user for dimension size.
         JMP     GETNUM          rA <- 1-digit number from user.
-        CMPA    =3=             Ensure input is between 3 and 9, inclusive.
-        JL      BADIN
-        CMPA    =9=
-        JG      BADIN
-        STA     DIM             DIM <- rA, the dimension of the board.
-        ENT1    -1
-        ENT2    1
-        ST1     BOARD+4
-        ST2     BOARD+5
+        NOP     2B
+        CMPA    =3=             Ensure input is between 3 and 9, inclusive:
+        JGE     3F
+        OUT     BADIN(TERM)         If input < 3, print message ...
+        JMP     2B                  ... and try again.
+3H      CMPA    =9=
+        JLE     4F
+        OUT     BADIN(TERM)         If input > 9, print message ...
+        JMP     2B                  ... and try again.
+4H      STA     DIM             DIM <- rA, the dimension of the board.
+        ADD     =29=            (Decrement rA by one, then convert to char.)
+        STA     ROW1(2:2)       Enter correct bound into ROWMSG.
+        STA     COL1(5:5)       Enter correct bound into COLMSG.
         JMP     PBOARD
+        LDX     NAMELEN
+        JMP     INSCHR
+        NOP     NAME
+        NOP     BCELL           Append a ':' to the end of NAME.
+1H      JMP     GETPLYR
+        JMP     PBOARD
+        JMP     1B
         HLT
         END     MAIN
