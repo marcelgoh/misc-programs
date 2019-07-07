@@ -1,8 +1,9 @@
 * Tic-tac-toe program.
-* Written by Marcel Goh from 3 to ? July 2019
+* Written by Marcel Goh from 3 to 7 July 2019
 
 * CONSTANTS AND ADDRESSES:
 TERM    EQU     19
+ABS     EQU     1:5             Absolute value
 BOARD   EQU     0
 INBUF   EQU     100
 OUTBUF1 EQU     115
@@ -71,11 +72,19 @@ TIEMSG  ALF     "IT'S "
         ALF     "A TIE"
         ALF     ".    "
         ORIG    380
-XRAND   CON     0               Used to generate random sequences.
+COINMSG ALF     "COIN "
+        ALF     "FLIPP"
+        ALF     "ED A "
+COINWD  ALF     "HEADS"
+        ALF     ".    "
+        ORIG    395
+SEED    CON     0               Used to generate random sequences.
+XRAND   CON     0
 ARAND   CON     101
 CRAND   CON     78903297
 RANDMAX CON     0
 DIM     CON     0               Dimension of board
+AREA    CON     0               Number of cells in board
 TRNSLFT CON     0               Count down number of turns left
 ROW     CON     0               Input row
 COL     CON     0               Input column
@@ -84,11 +93,13 @@ HORDIV  ALF     "-+   "         Used to print to terminal.
 BCELL   ALF     " :   "
 XCELL   ALF     "X:   "
 OCELL   ALF     "O:   "
-TEMP    CON     0
+TAILS   ALF     "TAILS"
+TEMP    CON     0               Temporary cells.
+TEMP1   CON     0
 
 * CODE:
         ORIG    3000
-* Print various error messages.
+* Error state
 BADPRNT OUT     ERRMSG1(TERM)
         HLT
 * The three possible end-states.
@@ -126,16 +137,19 @@ RANDM   STJ     9F
 9H      JMP     *               Return to caller.
 
 * Calling sequence: JMP RANDCEL
-* Entry conditions: Location DIM contains dimension.
+* Entry conditions: Location AREA contains area of board.
 *                   Location RANDMAX contains DIM * floor(WORDSIZE/DIM)
 * Exit conditions: rX holds a random integer from 0 to DIM - 1.
-*                  rA also affected.
+*                  rA, rI1 also affected.
 RANDCEL STJ     9F
-1H      JMP     RANDM           Store a new pseudo-random number in rA.
+1H      LD1     SEED            rI1 <- SEED.
+2H      JMP     RANDM           Do: Store a new pseudo-random number in rA.
+        DEC1    1                   Decrement rI1 by one.
+        J1P     2B              While rI1 > 0.
         CMPA    RANDMAX
         JGE     1B              Throw away result and try again if too large.
         SRAX    5               Otherwise,
-        DIV     DIM                 rX holds a random integer from 0 to DIM - 1.
+        DIV     AREA                 rX <- random integer from 0 to AREA - 1.
 9H      JMP     *               Return to caller.
 
 * Calling sequence: JMP STRLEN
@@ -262,9 +276,9 @@ PBORDER STJ     9F
         JMP     CLRBUF          Clear OUTBUF1.
         NOP     OUTBUF1
         ENT2    44              rI2 <- '+'.
-        ST2     OUTBUF1(1:1)    Add '+' to first block of buffer.
+        ST2     OUTBUF1(3:3)    Add '+' to first block of buffer.
         ENT1    OUTBUF1         rI1 points to first block of buffer.
-        ENT2    2               rI2 <- 2.
+        ENT2    4               rI2 <- 2.
         LDA     DIM             rA <- *DIM.
 1H      JMP     PTWOCHR         Do:
         NOP     HORDIV              Add "-+" to buffer.
@@ -273,21 +287,47 @@ PBORDER STJ     9F
         OUT     OUTBUF1(TERM)   Print the buffer to terminal.
 9H      JMP     *               Return to caller.
 
+* Calling sequence: JMP PNUMS
+* Entry conditions: DIM is dimension of board.
+* Exit conditions: Numbers 0 to DIM - 1 printed to screen (as a guide).
+*                  All registers, TEMP, OUTBUF1 affected.
+PNUMS   STJ     9F
+        JMP     CLRBUF          Clear OUTBUF1.
+        NOP     OUTBUF1
+        ENT5    30              rI5 <- '0'.
+        ENT1    OUTBUF1         rI1 points to first block of buffer.
+        STZ     TEMP            Clear TEMP.
+        ENT2    4               rI2 <- 2.
+        LD6     DIM             rI6 <- *DIM.
+1H      ST5     TEMP(1:1)       Do: Add a digit to TEMP.
+        JMP     PTWOCHR             Add "# " to buffer ...
+        NOP     TEMP                ... where # is the digit.
+        INC5    1                   Increment digit by one.
+        DEC6    1                   Decrement rI6 by one.
+        J6P     1B              While rI6 > 0.
+        OUT     OUTBUF1(TERM)      Print buffer.
+9H      JMP     *               Return to caller.
+
 * Calling sequence: JMP PBOARD
 * Entry conditions: BOARD contains board of dimension DIM.
 * Exit conditions: Board printed to terminal, OUTBUF1 affected.
 *                  All registers used.
 PBOARD  STJ     9F
-* Print top border
+        JMP     PNUMS           Print numbers.
         JMP     PBORDER         Print top border.
         LDX     DIM             rX <- *DIM.
         ENT5    BOARD           rI5 is the board pointer.
 1H      JMP     CLRBUF          Do:
         NOP     OUTBUF1             Clear buffer.
         ENT1    54
-        ST1     OUTBUF1(1:1)        Add ':' to buffer.
+        LDA     DIM                 rA <- *DIM.
+        STX     TEMP
+        SUB     TEMP                rA <- *DIM - rX.
+        INCA    30
+        STA     OUTBUF1(1:1)        Add current row index to buffer.
+        ST1     OUTBUF1(3:3)        Add ':' to buffer.
         ENT1    OUTBUF1             rI1 <- OUTBUF.
-        ENT2    2                   rI2 <- 2.
+        ENT2    4                   rI2 <- 2.
         LD6     DIM                 Set rI6 <- *DIM.
 2H      DEC6    1                   Do: decrement rI6 by one.
         LDA     0,5                     rA <- next value of array.
@@ -406,7 +446,7 @@ DIAGSUM STJ     9F
 * Entry conditions: BOARD points to a square board of dimension DIM,
 *                   with at least one empty cell.
 * Exit conditions: Cell of player's choice is filled with an "X".
-*                  TRNSLFT decrements by 1.
+*                  TRNSLFT decrements by one.
 *                  Registers used: rA, rX, rI1, rI2, rI3.
 *                  Memory cells used: ROW, COL, DIM, TEMP.
 GETPLYR STJ     9F
@@ -441,14 +481,59 @@ GETPLYR STJ     9F
         STA     TRNSLFT
 9H      JMP     *               Return to caller.
 
+* Calling sequence: JMP GETADVR
+* Entry conditions: BOARD points to board of dimension DIM with at least
+*                   one empty cell.
+* Exit conditions: The adversary chooses a cell to fill with "O".
+*                  TRNSLFT decrements by one.
+*                  TEMP, TEMP1, all registers affected.
+GETADVR STJ     9F
+        OUT     ADVRSRY(TERM)   Print adversary.
+        ENT6    -1              rI6 <- -1.
+        LDA     DIM
+        DECA    1
+        STA     TEMP1           *TEMP1 <- *DIM - 1.
+1H      JMP     ROWSUM          Do: rA is sum of rI4-th row.
+        CMPA    TEMP1(ABS)          If abs(rA) = *TEMP1,
+        JNE     2F                      Row has only one empty cell.
+        ST6     BOARD,5                 Fill it with -1 and we're done.
+        JMP     ADVDONE
+2H      JMP     COLSUM              rA is sum of rI4-th column.
+        CMPA    TEMP1(ABS)          If abs(rA) = *TEMP1,
+        JNE     2F                      Column has only one empty cell.
+        ST6     BOARD,5                 Fill it with -1 and we're done.
+        JMP     ADVDONE
+2H      DEC4    1                   Decrement rI4 by one.
+        J4NN    1B              While rI4 >= 0.
+        JMP     DIAGSUM         Sum first diagonal (rI4 is negative here).
+        CMPA    TEMP1(ABS)      Check if exactly one empty cell.
+        JNE     2F
+        ST6     BOARD,5
+        JMP     ADVDONE
+2H      ENT4    1               rI4 is positive.
+        JMP     DIAGSUM         Sum second diagonal.
+        CMPA    TEMP1(ABS)      Check if someone won.
+        JNE     2F
+        ST6     BOARD,5
+        JMP     ADVDONE
+2H      JMP     RANDCEL         No obvious move. rX <- random cell.
+        STX     TEMP
+        LD1     TEMP            rI1 is random cell.
+        LDA     BOARD,1         rA <- BOARD[rI1].
+        JANZ    2B              If cell not empty, get another random cell.
+        ST6     BOARD,1         Otherwise, fill cell with -1.
+ADVDONE LDA     TRNSLFT         Decrement TRNSLFT.
+        DECA    1
+        STA     TRNSLFT
+9H      JMP     *               Return to caller.
+
 * Calling sequence: JMP CHKWINR
 * Entry conditions: BOARD points to board of dimension DIM.
 * Exit conditions: Jumps to BINGO if player wins; DARNIT if adversary wins;
 *                  TIE if board is full; returns to caller otherwise.
-*                  Registers used, rA, rX, rI1 through rI4.
+*                  Registers used, rA, rX, rI1 through rI5.
 * GAMEOVR gets called if all entries in a row/column/diagonal are the same,
 * i.e. the sum is *DIM or -*DIM.
-ABS     EQU     1:5             Absolute value
 GAMEOVR JAN     DARNIT          Someone won: branch on sign of rA.
         JMP     BINGO
 CHKWINR STJ     9F
@@ -475,29 +560,29 @@ CHKWINR STJ     9F
         JMP     GAMEOVR
 2H      LDA     TRNSLFT
         JAZ     TIE             If *TRNSLFT = 0, it's a tie.
-9H      JMP     *               Return to caller.
+9H      JMP     *               If inconclusive, return to caller.
 
 * Main entry point
 MAIN    OUT     NAMEMSG(TERM)
-        IN      NAME(TERM)
-        LDA     NAME            Use first five letters of player's name
-        JANZ    1F                  as initial seed for RAND, unless zero.
-        OUT     BADIN(TERM)
-        JMP     MAIN            If input bad, try again.
-1H      STA     XRAND
-        JMP     STRLEN          rI2 <- length of NAME.
-        NOP     NAME
-        ST2     NAMELEN         *NAMELEN <- rI2.
-        NOP     NAME
-        ST2     TEMP
-1H      JMP     RANDM           Call RANDM once for every letter in
-        DEC2    1                   player's name.
-        J2P     1B
+1H      IN      NAME(TERM)      Get player's name.
+        JMP     STRLEN
+        NOP     NAME            rI2 <- length of name.
+        J2NZ    2F              If rI2 = 0,
+        OUT     BADIN(TERM)         Print error message.
+        JMP     1B                  Try again.
+2H      ST2     NAMELEN         *NAMELEN <- rI2.
 1H      OUT     RANDMSG(TERM)
         JMP     GETNUM
         NOP     1B
         STA     TEMP
         LD2     TEMP            rI2 <- 1-digit number from user.
+        STA     SEED
+        MUL     =1000000=
+        ADD     NAME            Treat first five letters of name as number ...
+        JOV     *               ... and add.
+        STA     XRAND           Seed the RNG.
+        LD1     NAMELEN
+        INC2    0,1             rI2 <- rI2 + *NAMELEN.
 1H      J2NP    2F
         JMP     RANDM           Call RANDM rI2 times.
         DEC2    1
@@ -522,14 +607,27 @@ MAIN    OUT     NAMEMSG(TERM)
         DIV     DIM             rA <- floor(WORDSIZE / DIM)
         STA     RANDMAX
         LDA     DIM
-        MUL     DIM             rX <- DIM * DIM.
+        MUL     DIM
+        STX     AREA            *AREA <- *DIM * *DIM
         STX     TRNSLFT         *TRNSLFT <- rX.
         LDX     NAMELEN
         JMP     INSCHR
         NOP     NAME
         NOP     BCELL           Append a ':' to the end of NAME.
-LOOP    JMP     GETPLYR
-        JMP     PBOARD          
+        JMP     RANDM           rA is a random integer.
+        SRAX    5
+        DIV     =2=             rX is 0/1 (uniform because word-size even).
+        JXNZ    PLRSTRT
+        LDA     TAILS           If tails:
+        STA     COINWD              Change "HEADS" to "TAILS" in message.
+        OUT     COINMSG(TERM)       Print tails message.
+        JMP     ADVSTRT             Jump because adversary starts first.
+PLRSTRT OUT     COINMSG(TERM)   Print heads message.
+LOOP    JMP     GETPLYR         Get player's move.
+        JMP     PBOARD          Print the board.        
+        JMP     CHKWINR         Check if someone won and jump accordingly.
+ADVSTRT JMP     GETADVR         Get adversary's move.
+        JMP     PBOARD
         JMP     CHKWINR         Check if someone won.
         JMP     LOOP
         END     MAIN
