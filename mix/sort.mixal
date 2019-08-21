@@ -1,0 +1,46 @@
+* Various sorting algorithms
+
+* DATA:
+TERM    EQU     19
+BUF     EQU     200
+        ORIG    215
+KEYS    CON     0
+        CON     503
+        CON     87
+        CON     512
+        CON     61
+        CON     908
+        CON     170
+        CON     897
+        CON     275
+        CON     653
+        CON     426
+        CON     154
+        CON     509
+        CON     612
+        CON     677
+        CON     765
+        CON     703
+N       CON     16
+* CODE:
+        ORIG    3000
+* Prints N keys, one per line, to screen starting at KEYS+1
+* Modifies registers rA, rX, rI1, rI2; memory at BUF
+PRINTKS STJ     SKTNIRP
+        LD1     N
+        ENT2    1
+1H      LDA     KEYS,2
+        CHAR
+        STX     BUF
+        OUT     BUF(TERM)
+        DEC1    1
+        INC2    1
+        J1NZ    1B
+SKTNIRP JMP     *
+* Algorithm S (Straight two-way merge sort). Sorts KEYS+1 to KEYS+N
+* using KEYS+N+1 to KEYS+2N as an auxiliary area.
+MRGSRT  STJ     TRSGRM          Store return address.
+TRSGRM  JMP     *
+INIT    JMP     PRINTKS
+        HLT
+        END     INIT
