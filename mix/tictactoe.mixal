@@ -80,7 +80,7 @@ COINWD  ALF     "HEADS"
         ORIG    395
 SEED    CON     0               Used to generate random sequences.
 XRAND   CON     0
-ARAND   CON     101
+ARAND   CON     0101
 CRAND   CON     78903297
 RANDMAX CON     0
 DIM     CON     0               Dimension of board
@@ -278,7 +278,7 @@ PBORDER STJ     9F
         ENT2    44              rI2 <- '+'.
         ST2     OUTBUF1(3:3)    Add '+' to first block of buffer.
         ENT1    OUTBUF1         rI1 points to first block of buffer.
-        ENT2    4               rI2 <- 2.
+        ENT2    4               rI2 <- 4.
         LDA     DIM             rA <- *DIM.
 1H      JMP     PTWOCHR         Do:
         NOP     HORDIV              Add "-+" to buffer.
@@ -297,7 +297,7 @@ PNUMS   STJ     9F
         ENT5    30              rI5 <- '0'.
         ENT1    OUTBUF1         rI1 points to first block of buffer.
         STZ     TEMP            Clear TEMP.
-        ENT2    4               rI2 <- 2.
+        ENT2    4               rI2 <- 4.
         LD6     DIM             rI6 <- *DIM.
 1H      ST5     TEMP(1:1)       Do: Add a digit to TEMP.
         JMP     PTWOCHR             Add "# " to buffer ...
@@ -538,8 +538,8 @@ GAMEOVR JAN     DARNIT          Someone won: branch on sign of rA.
         JMP     BINGO
 CHKWINR STJ     9F
         LD4     DIM
-        DEC4    1               rI4 <- *DIM - 1.
-1H      JMP     ROWSUM          Do: rA is sum of rI4-th row.
+1H      DEC4    1               Do: Decrement rI4 by one.
+        JMP     ROWSUM              rA is sum of rI4-th row.
         CMPA    DIM(ABS)            If abs(rA) = *DIM, someone won.
         JNE     2F
         JMP     GAMEOVR
@@ -547,8 +547,7 @@ CHKWINR STJ     9F
         CMPA    DIM(ABS)            If abs(rA) = *DIM, someone won.
         JNE     2F
         JMP     GAMEOVR
-2H      DEC4    1                   Decrement rI4 by one.
-        J4NN    1B              While rI4 >= 0.
+        J4P    1B              While rI4 >= 0.
         JMP     DIAGSUM         Sum first diagonal (rI4 is negative here).
         CMPA    DIM(ABS)        Check if someone won.
         JNE     2F

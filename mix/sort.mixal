@@ -38,7 +38,7 @@ PRINTKS STJ     SKTNIRP
         J1NZ    1B
 SKTNIRP JMP     *
 * Algorithm S (Straight two-way merge sort). Sorts KEYS+1 to KEYS+N
-* using KEYS+N+1 to KEYS+2N as an auxiliary area.
+* using KEYS+N+1 to KEYS+(2N) as an auxiliary area.
 MRGSRT  STJ     TRSGRM          Store return address.
 TRSGRM  JMP     *
 INIT    JMP     PRINTKS
