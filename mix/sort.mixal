@@ -27,16 +27,16 @@ N       CON     16
 * Prints N keys, one per line, to screen starting at KEYS+1
 * Modifies registers rA, rX, rI1, rI2; memory at BUF
 PRINTKS STJ     SKTNIRP
-        LD1     N
-        ENT2    1
-1H      LDA     KEYS,2
-        CHAR
-        STX     BUF
-        OUT     BUF(TERM)
-        DEC1    1
-        INC2    1
-        J1NZ    1B
-SKTNIRP JMP     *
+        LD1     N               Used to count down loop.
+        ENT2    1               Key index.
+1H      LDA     KEYS,2          Load key.
+        CHAR    
+        STX     BUF             Store string in buffer.
+        OUT     BUF(TERM)       Print buffer to terminal.
+        DEC1    1               Decrement loop counter.
+        INC2    1               Increment index.
+        J1NZ    1B              Loop if not done.
+SKTNIRP JMP     *               Return to caller.
 * Algorithm S (Straight two-way merge sort). Sorts KEYS+1 to KEYS+N
 * using KEYS+N+1 to KEYS+(2N) as an auxiliary area.
 MRGSRT  STJ     TRSGRM          Store return address.

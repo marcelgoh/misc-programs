@@ -10,9 +10,20 @@
 #include "tree.h"
 #include "dynarray.h"
 #include "heap.h"
+#include "hashtbl.h"
 
 int main() {
-    /* HEAP TESTS */
+    /* HASHTBL TESTS */
+    HASHTBL *h = new_hashtbl(100);
+    tbl_replace(h, "hello", 'c');
+    tbl_replace(h, "knuth", 'g');
+    printf("%c%c\n", tbl_find(h, "hello"), tbl_find(h, "knuth"));
+    tbl_replace(h, "hello", 'm');
+    printf("%c%c\n", tbl_find(h, "hello"), tbl_find(h, "knuth"));
+    free_hashtbl(&h);
+    tbl_find(h, "hello");
+
+    /* HEAP TESTS
     HEAP *h = new_heap();
     add_heap(h, 4, 'd');
     add_heap(h, 6, 'f');
@@ -30,6 +41,7 @@ int main() {
     print_heap(h);
     free_heap(&h);
     print_heap(h);
+    */
 
     /* DYNARRAY TESTS
     DYNARRAY *arr = new_da(5);
