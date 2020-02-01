@@ -1,0 +1,184 @@
+* Find longest common subsequence (dynamic programming)
+* Written by Marcel Goh on 1 February 2020
+
+* DEVICES
+CARDS   EQU     16
+TERM    EQU     19
+
+* ADDRESSES
+INBUF   EQU     0
+OUTBUF  EQU     20
+X       EQU     40
+Y       EQU     60
+TABLE   EQU     80
+
+* DATA
+        ORIG    500
+N       CON     0               Length of X array.
+NN      CON     0
+M       CON     0               Length of Y array.
+MM      CON     0
+TEMP    CON     0
+
+* CODE
+        ORIG    3000
+BEGIN   IN      INBUF(CARDS)
+        ENTA    0
+        LDX     INBUF
+        NUM
+        STA     N               Store length of X array.
+        INCA    1
+        STA     NN
+        IN      X(CARDS)        Get sequence X.
+        ENT1    N
+1H      ENTA    0
+        LDX     X,1
+        NUM
+        STA     X,1
+        DEC1    1
+        J1NZ    1B
+        IN      INBUF(CARDS)
+        ENTA    0
+        LDX     INBUF
+        NUM
+        STA     M               Store length of Y array.
+        INCA    1
+        STA     MM
+        IN      Y(CARDS)        Get sequence Y.
+        ENT1    M
+1H      ENTA    0
+        LDX     Y,1
+        NUM
+        STA     Y,1
+        DEC1    1
+        J1NZ    1B
+*       Sequences and constants loaded. Fill table.
+        ENT1    0               Set i <- 0.
+        ENT2    0               Set j <- 0.
+LOOP    ENTA    0,1
+        MUL     MM
+        SLAX    5               rA <- i*MM.
+        ST2     TEMP
+        ADD     TEMP            rA <- rA + j.
+        STA     TEMP
+        LD3     TEMP            k <- i*MM + j.
+        J1Z     2F
+        J2Z     2F
+        LDA     X,1             rA <- X[i].
+        CMPA    Y,2             Compare rA to Y[j].
+        JNE     3F
+        ENTA    0,1
+        DECA    1               rA <- i - 1.
+        MUL     MM
+        SLAX    5               rA <- (i - 1)*MM
+        ST2     TEMP
+        ADD     TEMP
+        DECA    1               rA <- (i - 1)*MM- j - 1.
+        STA     TEMP
+        LD4     TEMP            rI4 represents index [i-1, j-1].
+        LDA     TABLE,4
+        INCA    1               rA <- TABLE[i-1,j-1] + 1.
+        STA     TABLE,3         TABLE[i,j] <- rA.
+        JMP     NEXT
+3H      ENTA    0,1
+        MUL     MM
+        SLAX    5
+        ST2     TEMP
+        ADD     TEMP
+        DECA    1
+        STA     TEMP
+        LD4     TEMP            rI4 represents index [i, j-1]
+        ENTA    0,1
+        DECA    1
+        MUL     MM
+        SLAX    5
+        ST2     TEMP
+        ADD     TEMP
+        STA     TEMP
+        LD5     TEMP            rI5 represents index [i-1,j]
+        LDA     TABLE,4         rA <- TABLE[i, j-1].
+        CMPA    TABLE,5
+        JGE     4F              If rA < TABLE[i-1,j],
+        LDA     TABLE,5             Set rA <- TABLE[i-1,j].
+4H      STA     TABLE,3         TABLE[i,j] <- rA.
+        JMP     NEXT
+2H      STZ     TABLE,3         TABLE[i,j] <- 0.
+NEXT    INC2    1               Increment j by one.
+        CMP2    M               If j > M,
+        JLE     4F
+        ENT2    0                   Set j <- 0.
+        INC1    1                   Increment i by one.
+4H      CMP1    N               If i <= N,
+        JLE     LOOP                Loop again.
+*       Table filled. Print sequence.
+        LDA     N
+        INCA    1
+        STA     TEMP
+        LDA     M
+        INCA    1
+        MUL     TEMP
+        STX     TEMP
+        LD1     TEMP
+        DEC1    1
+        LD3     TABLE,1
+        LD1     N
+        LD2     M
+9H      LDA     X,1
+        CMPA    Y,2
+        JNE     1F
+        CHAR
+        SLAX    6
+        SRAX    1
+        STA     OUTBUF,3
+        DEC3    1
+        DEC1    1
+        DEC2    1
+        JMP     7F
+1H      ENTA    0,1
+        MUL     MM
+        SLAX    5
+        ST2     TEMP
+        ADD     TEMP
+        STA     TEMP
+        LD6     TEMP
+        SUB     MM
+        DECA    1
+        STA     TEMP
+        LD5     TEMP            rI5 represents index [i-1, j]
+        ENT4    0,6
+        DEC4    1               rI4 represents index [i, j-1]
+        LDA     TABLE,4
+        CMPA    TABLE,5
+        JG      8F
+        DEC1    1
+        JMP     7F
+8H      DEC2    1
+7H      J1Z     6F
+        J2Z     6F
+        JMP     9B
+6H      OUT     OUTBUF(TERM)
+*       Print table.
+        ENT1    0
+        ENT2    0
+1H      ENTA    0,1
+        MUL     MM
+        SLAX    5
+        ST2     TEMP
+        ADD     TEMP
+        STA     TEMP
+        LD3     TEMP
+        LDA     TABLE,3
+        CHAR
+        SLAX    6
+        SRAX    1
+        STA     OUTBUF,2
+        INC2    1
+        CMP2    M
+        JLE     2F
+        OUT     OUTBUF(TERM)
+        ENT2    0
+        INC1    1
+2H      CMP1    N
+        JLE     1B
+        HLT
+        END     BEGIN
