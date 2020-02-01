@@ -1,0 +1,80 @@
+* Fast exponentiation
+
+* DATA:
+TERM    EQU     19
+        ORIG    0
+WELCOME ALF     "(FAST"
+        ALF     " EXPO"
+        ALF     "NENTI"
+        ALF     "ATION"
+        ALF     ")    "
+        ORIG    15
+BASEMSG  ALF     "ENTER"
+        ALF     " BASE"
+        ALF     " (1 D"
+        ALF     "IGIT)"
+        ORIG    30
+POWMSG  ALF     "ENTER"
+        ALF     " POWE"
+        ALF     "R (1 "
+        ALF     "DIGIT"
+        ALF     ")    "
+INBUF   EQU     45
+OUTBUF  EQU     60
+ARR     EQU     75                      Space for stack
+
+* CODE:
+        ORIG    3000
+START   OUT     WELCOME(TERM)           Print welcome message.
+        OUT     BASEMSG(TERM)           Ask for the base.
+        IN      INBUF(TERM)
+        ENTA    0
+        LDX     INBUF
+        SRAX    4
+        NUM
+        STA     BASE                    BASE holds the base.             
+        OUT     POWMSG(TERM)            Ask for the power.
+        IN      INBUF(TERM)
+        ENTA    0
+        LDX     INBUF
+        SRAX    4
+        NUM
+        SRAX    5                       rAX <- n.
+*       Start of exponentiation procedure (computing x^n).
+        ENT2    0                       Set i <- 0.
+1H      DIV     =2=                     Do: rA <- rAX / 2; rX <- rAX mod 2.
+        STX     ARR,2                       ARR[i] <- rX.
+        INC2    1                           Increment i by one.
+        SRAX    5                           rX <- rA; rA <- 0.
+        JXNZ    1B                      While rX /= 0.
+        ENTA    1                       Start loop with rA = 1.
+1H      DEC2    1                       Do: Decrement i by one.
+        LD3     ARR,2                      j <- ARR[i].
+        STA     TEMP
+        MUL     TEMP
+        SLAX    5                           rA <- rA * rA.
+        J3Z     2F                          If remainder was 0, skip next step:
+        MUL     BASE
+        SLAX    5                               rA <- rA * x.
+2H      J2NZ    1B                      While i > 0.
+        CHAR
+        STA     OUTBUF
+        STX     OUTBUF+1
+        OUT     OUTBUF(TERM)            Print answer.
+        ENT1    10
+1H      DEC1    1
+        LDA     ARR,1
+        CHAR
+        SLAX    6
+        SRAX    5
+        STX     ARR,1
+        J1NZ    1B
+        OUT     ARR(TERM)
+        HLT
+* To avoid warnings
+BASE    CON     0
+TEMP    CON     0
+        END     START
+
+
+
