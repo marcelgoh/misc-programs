@@ -1,0 +1,148 @@
+* Fast exponentiation
+
+* DATA:
+COLOUR  EQU     0
+K       EQU     10
+ADJSIZE EQU     30
+ADJ     EQU     40              (This is a waste of memory.)
+S       EQU     140
+L       EQU     150
+OUTBUF  EQU     160
+
+* CODE:
+        ORIG    3000
+START   NOP
+N       CON     9               Number of nodes.
+        ENT1    149             Clear all memory.
+1H      STZ     0,1
+        DEC1    1
+        J1NZ    1B
+        LDA     =2=
+        STA     ADJSIZE+1
+        STA     L+1
+        STA     ADJSIZE+4
+        STA     L+4
+        STA     ADJSIZE+5
+        STA     L+5
+        LDA     =1=
+        STA     ADJSIZE+2
+        STA     L+2
+        STA     ADJSIZE+6
+        STA     L+6
+        STA     ADJSIZE+7
+        STA     L+7
+        STA     ADJSIZE+8
+        STA     L+8
+        LDA     =2=
+        STA     ADJ+11
+        LDA     =3=
+        STA     ADJ+12
+        LDA     =3=
+        STA     ADJ+21
+        LDA     =1=
+        STA     ADJ+61
+        LDA     =2=
+        STA     ADJ+51
+        LDA     =6=
+        STA     ADJ+41
+        LDA     =5=
+        STA     ADJ+42
+        LDA     =7=
+        STA     ADJ+52
+        LDA     =8=
+        STA     ADJ+71
+        LDA     =9=
+        STA     ADJ+81
+* CALCULATE SPAN OF GRAPH
+TEMP    CON     0               S1. Initialise.
+TEMP2   CON     0
+COMP    CON     0
+SSIZE   CON     0               Make empty stack.
+        ENT1    1               Set i <- 1.
+2H      LDA     COLOUR,1        S2. Get next white node.
+        JAZ     9F              If COLOUR[i] = 0, skip ahead.
+        INC1    1               Otherwise, increment i by one.
+        CMP1    N               If i <= N,
+        JLE     2B                  try again.
+        JMP     6F              Otherwise, jump to step S6.
+9H      LD6     SSIZE
+        ST1     S,6             Push S <= i.
+        INC6    1
+        ST6     SSIZE
+3H      LD6     SSIZE           S3. Pop.
+        J6NZ    9F              If stack is empty,
+        JMP     2B                  and return to S2.
+9H      DEC6    1
+        ST6     SSIZE
+        LD2     S,6             Otherwise, set U <= S.
+        ST2     TEMP
+        ENTA    10
+        MUL     TEMP
+        STX     TEMP            (TEMP points to ADJ[U].)
+        LD3     COLOUR,2        If COLOUR[U] = 1,
+        J3NZ    5F                  jump to S5.
+        ENT3    1               S4. White node.
+        LD6     SSIZE
+        ST2     S,6
+        INC6    1
+        ST6     SSIZE           Push S <= U.
+        LD3     ADJSIZE,2       Set j <- ADJSIZE[U].
+7H      J3Z     9F              While j > 0,
+        LDA     TEMP
+        ST3     TEMP2
+        ADD     TEMP2
+        STA     TEMP2
+        LD5     TEMP2
+        LD4     ADJ,5                 V <- ADJ[U][j].
+        LDA     COLOUR,4
+        JANZ    8F                  If COLOUR[V] = 0,
+        LD6     SSIZE
+        ST4     S,6
+        INC6    1
+        ST6     SSIZE                   Push S <= V.
+        DEC3    1
+        ST3     L,2               Update L[U].
+        JMP     3B                      Return to step S3.
+8H      DEC3    1                   Decrement j by one.
+        JMP     7B                  Loop.
+9H      ENT3    1
+        ST3     COLOUR,2        COLOUR[U] <- 1.
+        JMP     3B              Return to step S3.
+5H      LD3     ADJSIZE,2       S5. Black node.
+        J3NZ    9F              If j (= ADJSIZE[U]) = 0,
+        STZ     K,2                 K[U] <- 0.
+        JMP     3B                  Return to step S3.
+9H      ENTX    0               Set m <- 0. (Maximum so far.)
+7H      J3Z     9F              While j > 0,
+        LDA     TEMP
+        ST3     TEMP2
+        ADD     TEMP2
+        STA     TEMP2
+        LD5     TEMP2
+        LD4     ADJ,5                 V <- ADJ[U][j].
+        LD4     K,4                 k <- K[V].
+        STX     COMP
+        CMP4    COMP                If k > m,
+        JLE     8F
+        ST4     COMP                    Set m <- k.
+8H      LDX     COMP
+        DEC3    1                   Decrement j by one,
+        JMP     7B                  and loop.
+9H      INCX    1
+        STX     K,2             K[U] <- m + 1.
+        JMP     3B              Return to step S3.
+6H      LD1     N               S6. Find maximum in K. Set i <- N.
+        STZ     TEMP            Set TEMP <- 0. (Maximum so far.)
+7H      LDA    K,1              Do: rIA <- K[i].
+        CMPA    TEMP
+        JLE     9F                  If rIA > TEMP,
+        STA     TEMP                    Set TEMP <- rIA.
+9H      DEC1    1                   Decrement i by one.
+        J1NZ    7B              While i > 0.
+        LDA     TEMP
+        CHAR
+        STX     OUTBUF
+        OUT     OUTBUF(19)
+*       OUT     K(19)
+        HLT
+        END     START

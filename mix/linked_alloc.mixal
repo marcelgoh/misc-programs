@@ -7,6 +7,10 @@ INFO    EQU     0:3             Definition of INFO field
 LINK    EQU     4:5             Definition of LINK field
 
 * DATA:
+BLACK   EQU     2000
+K       EQU     2010
+ADJ     EQU     2020
+N       EQU     5               Should be less than 10
 
 * CODE:
         ORIG    3000
@@ -113,24 +117,38 @@ ESREVER JMP     *
 
 * Main entry point of program
 STACK   CON     0
-START   JMP     LINKSTK
-        LDA     =6=
+START   JMP     LINKSTK         Link the available memory
+        ENT1    1
+1H      STZ     BLACK,1
+        STZ     K,1
+        STZ     ADJ,1
+        INC1    1
+        CMP1    N
+        JLE     1B
+        LDA     =3=
         JMP     INSERT
-        NOP     STACK
-        LDA     =4=
+        NOP     ADJ+1
+        LDA     =2=
         JMP     INSERT
-        NOP     STACK
-        LDA     =11=
+        NOP     ADJ+1
+        LDA     =3=
         JMP     INSERT
-        NOP     STACK
-        LDA     =118=
+        NOP     ADJ+2
+        LDA     =1=
         JMP     INSERT
-        NOP     STACK
+        NOP     ADJ+4
+        LDA     =2=
+        JMP     INSERT
+        NOP     ADJ+5
         JMP     PRINT
-        NOP     STACK
-        JMP     REVERSE         Test REVERSE
-        NOP     STACK
+        NOP     ADJ+1
         JMP     PRINT
-        NOP     STACK
+        NOP     ADJ+2
+        JMP     PRINT
+        NOP     ADJ+3
+        JMP     PRINT
+        NOP     ADJ+4
+        JMP     PRINT
+        NOP     ADJ+5
         HLT
         END     START

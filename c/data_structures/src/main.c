@@ -13,7 +13,7 @@
 #include "hashtbl.h"
 
 int main() {
-    /* HASHTBL TESTS */
+    /* HASHTBL TESTS
     HASHTBL *h = new_hashtbl(100);
     tbl_replace(h, "hello", 'c');
     tbl_replace(h, "knuth", 'g');
@@ -22,6 +22,7 @@ int main() {
     printf("%c%c\n", tbl_find(h, "hello"), tbl_find(h, "knuth"));
     free_hashtbl(&h);
     tbl_find(h, "hello");
+    */
 
     /* HEAP TESTS
     HEAP *h = new_heap();
@@ -67,28 +68,19 @@ int main() {
     print_da(arr);
     */
 
-    /* RED-BLACK TREE TESTS 
+    /* RED-BLACK TREE TESTS */
     TREE *tree = new_tree();
 
-    insert(tree,8,'h');
-    insert(tree,3,'c');
-    insert(tree,12,'l');
-    insert(tree,6,'f');
-    insert(tree,9,'i');
-    insert(tree,5,'e');
-    insert(tree,13,'m');
-    insert(tree,1,'a');
-    insert(tree,7,'g');
-    insert(tree,2,'b');
-    insert(tree,4,'d');
-    insert(tree,10,'j');
-    insert(tree,11,'k');
+    insert(tree,1,'A');
+    insert(tree,2,'B');
+    insert(tree,3,'D');
+    insert(tree,4,'E');
+    insert(tree,5,'G');
+    insert(tree,6,'H');
+    insert(tree,7,'C');
+    insert(tree,8,'F');
 
     print_tree(tree);
-
-    printf("%c\n", delete(tree, 13));
-    printf("%c\n", delete(tree, 21));
-    */
 
     /* LINKED LIST TESTS
     LL *list = new_ll();
