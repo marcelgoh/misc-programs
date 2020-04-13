@@ -73,7 +73,6 @@ SSIZE   CON     0               Make empty stack.
         J6NZ    9F              If stack is empty,
         JMP     2B                  and return to S2.
 9H      DEC6    1
-        ST6     SSIZE
         LD2     S,6             Otherwise, set U <= S.
         ST2     TEMP
         ENTA    10
@@ -82,10 +81,6 @@ SSIZE   CON     0               Make empty stack.
         LD3     COLOUR,2        If COLOUR[U] = 1,
         J3NZ    5F                  jump to S5.
         ENT3    1               S4. White node.
-        LD6     SSIZE
-        ST2     S,6
-        INC6    1
-        ST6     SSIZE           Push S <= U.
         LD3     ADJSIZE,2       Set j <- ADJSIZE[U].
 7H      J3Z     9F              While j > 0,
         LDA     TEMP
@@ -109,6 +104,9 @@ SSIZE   CON     0               Make empty stack.
         ST3     COLOUR,2        COLOUR[U] <- 1.
         JMP     3B              Return to step S3.
 5H      LD3     ADJSIZE,2       S5. Black node.
+        LD6     SSIZE           Pop stack.
+        DEC6    1
+        ST6     SSIZE
         J3NZ    9F              If j (= ADJSIZE[U]) = 0,
         STZ     K,2                 K[U] <- 0.
         JMP     3B                  Return to step S3.
@@ -143,6 +141,6 @@ SSIZE   CON     0               Make empty stack.
         CHAR
         STX     OUTBUF
         OUT     OUTBUF(19)
-*       OUT     K(19)
+        OUT     K(19)
         HLT
         END     START
