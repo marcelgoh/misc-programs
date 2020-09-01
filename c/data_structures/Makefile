@@ -19,7 +19,7 @@ ${EXEC}: ${OBJS}
 	${CC} ${CFLAGS} ${SRCS} -o $@
 
 ${OBJDIR}/%.o: src/%.c ${HEADERS}
-	${CC} ${CFLAGS} -c -o $@ $<
+	${CC} ${CFLAGS} -g -c -o $@ $<
 
 .PHONY: clean
 clean:
